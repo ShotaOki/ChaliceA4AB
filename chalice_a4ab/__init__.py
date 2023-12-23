@@ -1,3 +1,4 @@
+from typing import Type
 from chalice.app import Chalice as AWSChalice
 
 from .chalice_plugin import (  # noqa: F401
@@ -30,4 +31,4 @@ except Exception:
 
 
 # Public functions
-Chalice: type[AWSChalice] = _Chalice
+Chalice: Type[AWSChalice] = _Chalice
