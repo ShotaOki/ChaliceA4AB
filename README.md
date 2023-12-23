@@ -12,12 +12,12 @@ Chalice plugin: Support `Agents for Amazon Bedrock`
 pip install chalice-a4ab
 ```
 
-2. Replace `from chalice.app import Chalice` to `from chalice_a4ab import Chalice`.
+2. Replace `from chalice import Chalice` to `from chalice_a4ab import Chalice`.
 
 Before:
 
 ```python
-from chalice.app import Chalice
+from chalice import Chalice
 
 app = Chalice("app-name")
 
@@ -54,16 +54,36 @@ pip install chalice-spec chalice-a4ab
 from chalice_a4ab import Chalice, AgentsForAmazonBedrockConfig
 
 # Set Config for Agents for Amazon bedrock
-config = AgentsForAmazonBedrockConfig(
-    title="abc"
+AgentsForAmazonBedrockConfig(
+    title="title",
+    instructions="Situation Settings for talking with Human and agent.(more than 40 words)",
+    description="Description of application",
 ).apply()
 
 app = Chalice("app-name")
 
 @app.router("path-name")
 ...
+```
 
-if __name__ == "__main__":
-    import boto3
-    config.save_to_s3(boto3.Session(), "bucket-name")
+documentation for `@app.router` sample: https://github.com/TestBoxLab/chalice-spec
+
+3. Upload by bash
+
+Create AWS Resource for Cloudformation
+
+```python
+chalice-a4ab init --profile ${PROFILE_NAME} --region ${REGION_NAME}
+```
+
+Or Update Already Exists AWS Resource
+
+```python
+chalice-a4ab sync --profile ${PROFILE_NAME} --region ${REGION_NAME}
+```
+
+Delete AWS Resource
+
+```python
+chalice-a4ab delete
 ```

@@ -36,6 +36,11 @@ def agents_for_amazon_bedrock(spec_initializer=None):
                 _spec = spec_initializer(_config)
                 # Set Spec to kwargs
                 kwargs["spec"] = _spec
+            if "app_name" in kwargs:
+                if _config is not None:
+                    _config.title = kwargs["app_name"]
+                if _spec is not None:
+                    _spec.title = kwargs["app_name"]
 
             # Rewrite Mixin Functions
             setattr(cls, "_runtime", APIRuntimeAll)
@@ -51,7 +56,7 @@ class AgentsForAmazonBedrockConfig(BaseModel):
     """
     Agents for Amazon Bedrock Config
 
-    :param title: title of API
+    :param title: title of API (Same as app_name)
     :param instructions: LLM Configuration settings
     :param description: description of API
     :param openapi_version: OpenAPI version (Support : 3.0.1)
@@ -64,9 +69,9 @@ class AgentsForAmazonBedrockConfig(BaseModel):
     :param foundation_model: foundation LLM model id (e.g. anthropic.claude-v2)
     """
 
-    title: str
-    instructions: Optional[str] = Field(min_length=40, max_length=1024)
-    description: str = Field("")
+    title: str = Field("default")
+    instructions: Optional[str] = Field(default=None, min_length=40, max_length=1024)
+    description: str = Field("Chalice applicatoin")
 
     openapi_version: str = Field("3.0.1")
     version: str = Field("0.1.0")
@@ -76,6 +81,11 @@ class AgentsForAmazonBedrockConfig(BaseModel):
     agent_action_name: str = Field("Main")
     idle_session_ttl_in_seconds: int = Field(900)
     foundation_model: str = Field("anthropic.claude-v2")
+
+    @staticmethod
+    def get_global_config():
+        global _config
+        return _config
 
     def apply(self):
         global _config

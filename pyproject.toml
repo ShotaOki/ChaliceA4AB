@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chalice-a4ab"
-version = "0.1.0"
+version = "0.1.1"
 description = "Chalice x Agents for Amazon Bedrock plug-ins"
 authors = ["Shota Oki"]
 repository = "https://github.com/ShotaOki/ChaliceA4AB"
@@ -21,6 +21,9 @@ pytest-cov = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1"
+
+[tool.poetry.scripts]
+chalice-a4ab = "chalice_a4ab.cli:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
