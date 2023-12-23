@@ -25,7 +25,7 @@ def setup_test():
         title="Test Schema",
         instructions="Test Agents for Amazon Bedrock, You can use this API with Amazon Bedrock Agent.",
     )
-    app = Chalice(app_name="test", spec=spec)
+    app = Chalice(app_name="Test Schema", spec=spec)
     return app, spec
 
 
@@ -151,7 +151,7 @@ def test_invoke_from_agents_for_amazon_bedrock_direct_chalice():
     Expects:
         Return response for Amazon Bedrock Agent
     """
-    app = DirectChalice(app_name="main-app")
+    app = DirectChalice(app_name="Test Schema")
 
     @app.route(
         "/posts",
@@ -217,7 +217,7 @@ def test_invoke_from_api_gateway_direct_chalice():
     Expects:
         Return response for Amazon Bedrock Agent
     """
-    app = DirectChalice(app_name="main-app")
+    app = DirectChalice(app_name="Test Schema")
 
     @app.route("/posts", methods=["POST"], content_types=["application/json"])
     def get_post():
