@@ -1,8 +1,13 @@
 # Chalice-A4AB
 
-## What is this library?
+## What is this?
 
 Chalice plugin: Support `Agents for Amazon Bedrock`
+
+## PIP
+
+**Chalice-a4ab**  
+https://pypi.org/project/chalice-a4ab/
 
 ## Usage
 
@@ -45,7 +50,7 @@ Create OpenAPI Schema automatically.
 1. Install Chalice-spec
 
 ```python
-pip install chalice-spec chalice-a4ab
+pip install chalice chalice-spec==0.7.0 chalice-a4ab boto3 pydantic
 ```
 
 2. Write Setting
@@ -55,12 +60,11 @@ from chalice_a4ab import Chalice, AgentsForAmazonBedrockConfig
 
 # Set Config for Agents for Amazon bedrock
 AgentsForAmazonBedrockConfig(
-    title="title",
     instructions="Situation Settings for talking with Human and agent.(more than 40 words)",
     description="Description of application",
 ).apply()
 
-app = Chalice("app-name")
+app = Chalice(app_name="app-name")
 
 @app.router("path-name")
 ...
@@ -87,3 +91,51 @@ Delete AWS Resource
 ```python
 chalice-a4ab delete
 ```
+
+# Develop
+
+Setup
+
+```bash
+poetry install
+```
+
+Run test
+
+```bash
+poetry run pytest
+```
+
+# Lisence
+
+MIT
+
+# API
+
+## Command Line TOOL
+
+| Command             | Descritpion                                       |
+| :------------------ | :------------------------------------------------ |
+| chalice-a4ab init   | Create AWS resource for Agents for amazon bedrock |
+| chalice-a4ab sync   | Sync OpenAPI schema to AWS                        |
+| chalice-a4ab delete | Delete AWS resource for Agents for amazon bedrock |
+
+| Options   | Description                                 |
+| :-------- | :------------------------------------------ |
+| --bucket  | Set S3 bucket name (for put OpenAPI schema) |
+| --profile | Set AWS Profile Name                        |
+| --region  | Set AWS Region Name                         |
+| --help    | Show Help                                   |
+
+## API
+
+**AgentsForAmazonBedrockConfig**
+
+| Method                         | Type   | Description                              |
+| :----------------------------- | :----- | :--------------------------------------- |
+| apply                          | -      | Current instace becomes global variable. |
+| agents_for_bedrock_schema_json | -      | Get OpenAPI Schema                       |
+| save_schema_to_local           | -      | Save OpenAPI Schema to local folder      |
+| save_schema_to_s3              | -      | Upload OpenAPI Schema to S3 bucket       |
+| save_config_to_local           | -      | Save Config setting to local folder      |
+| get_global_config              | static | Get global variable.                     |
