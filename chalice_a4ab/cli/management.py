@@ -284,7 +284,7 @@ def init(
     print("- Enabled UserInputAction")
 
     response = bedrock_agent.prepare_agent(
-        agentId=action.agent_id,
+        agentId=agent_id,
     )
     print("- Prepared agent")
 
