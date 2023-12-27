@@ -329,6 +329,19 @@ def sync(
         print("not found agent")
         return
 
+    # Get Current Agent
+    current_agent = bedrock_agent.get_agent(agentId=agent_info.agent_id)["agent"]
+    bedrock_agent.update_agent(
+        agentId=agent_info.agent_id,
+        agentName=current_agent["agentName"],
+        instruction=identity.AgentConfig.instructions,
+        foundationModel=identity.AgentConfig.foundation_model,
+        description=identity.AgentConfig.description,
+        idleSessionTTLInSeconds=identity.AgentConfig.idle_session_ttl_in_seconds,
+        agentResourceRoleArn=identity.agents_role_arn,
+    )
+
+    # Get Current Agent Action Group
     response = bedrock_agent.get_agent_action_group(
         agentId=agent_info.agent_id,
         agentVersion=identity.AgentConfig.agent_version,
@@ -342,7 +355,7 @@ def sync(
         agentVersion=response["agentActionGroup"]["agentVersion"],
         actionGroupId=response["agentActionGroup"]["actionGroupId"],
         actionGroupName=response["agentActionGroup"]["actionGroupName"],
-        description=response["agentActionGroup"]["description"],
+        description=identity.AgentConfig.description,
         actionGroupExecutor={
             "lambda": response["agentActionGroup"]["actionGroupExecutor"]["lambda"]
         },
