@@ -1,6 +1,8 @@
 from typing import Type
 from chalice.app import Chalice as AWSChalice
 
+from chalice_a4ab.runtime.parser_lambda.agents_parser import AgentsParserFunction
+
 from .chalice_plugin import (  # noqa: F401
     agents_for_amazon_bedrock,
     AgentsForAmazonBedrockConfig,
@@ -30,5 +32,10 @@ except Exception:
         pass
 
 
+# Define Class Type
+class MixinChaliceClassType(AWSChalice, AgentsParserFunction):
+    pass
+
+
 # Public functions
-Chalice: Type[AWSChalice] = _Chalice
+Chalice: Type[MixinChaliceClassType] = _Chalice

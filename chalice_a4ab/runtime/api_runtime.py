@@ -7,6 +7,10 @@ from typing import List, Optional
 
 from chalice_a4ab.runtime.model_utility.apigw import is_api_gateway_event
 from chalice_a4ab.runtime.model_utility.bedrock_agent import is_bedrock_agent_event
+from chalice_a4ab.runtime.parser_lambda.invoke_utility import (
+    invoke_agents_parser,
+    is_handle_event_agents_parser,
+)
 
 
 class APIRuntime(Enum):
@@ -59,6 +63,11 @@ class APIRuntimeHandler:
         if (APIRuntime.BedrockAgent in self._runtime) and is_bedrock_agent_event(event):
             converter = BedrockAgentEventToApiGateway()
 
+        # Called by Bedrock Agent Function Parser
+        if is_handle_event_agents_parser(self, event, context):
+            # Call Directory
+            return invoke_agents_parser(self, event, context)
+
         # Called by API Gateway
         if (APIRuntime.APIGateway in self._runtime) and is_api_gateway_event(event):
             return Chalice.__call__(self, event, context)
@@ -74,3 +83,18 @@ class APIRuntimeHandler:
         )
         # Return lambda result
         return converter.convert_response(event, api_gateway_response)
+
+
+def is_api_runtime_instance(target: APIRuntime) -> bool:
+    """
+    Check Instance: Mixin APIRuntime
+    """
+    if hasattr(target, "_runtime") is False:
+        return False
+    return True
+
+
+def mixin_api_runtime(cls):
+    # Rewrite Mixin Functions
+    setattr(cls, "_runtime", APIRuntimeAll)
+    setattr(cls, "__call__", APIRuntimeHandler.__call__)

@@ -1,10 +1,13 @@
 import json
 from typing import Any, Optional
-from chalice_a4ab.runtime.api_runtime import APIRuntimeHandler, APIRuntimeAll
+from chalice_a4ab.runtime.api_runtime import (
+    mixin_api_runtime,
+)
 from chalice.app import Chalice as AWSChalice
 from pydantic import BaseModel, Field
 from pathlib import Path
 from io import BytesIO
+from chalice_a4ab.runtime.parser_lambda.agents_parser import mixin_agents_parser
 from chalice_a4ab.runtime.pydantic_tool.utility import PydanticUtility as u
 
 # Global Variable: OpenAPI Format Exporter
@@ -43,8 +46,8 @@ def agents_for_amazon_bedrock(spec_initializer=None):
                     _spec.title = kwargs["app_name"]
 
             # Rewrite Mixin Functions
-            setattr(cls, "_runtime", APIRuntimeAll)
-            setattr(cls, "__call__", APIRuntimeHandler.__call__)
+            mixin_api_runtime(cls)
+            mixin_agents_parser(cls)
             return cls(*args, **kwargs)
 
         return wrapper

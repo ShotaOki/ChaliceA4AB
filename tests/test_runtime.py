@@ -233,6 +233,71 @@ def test_invoke_from_api_gateway_direct_chalice():
     assert "koikoi" in response["body"]
 
 
+def parser_lambda_input(prompt_type: str, raw_response: str):
+    return {
+        "messageVersion": "1.0",
+        "agent": {
+            "name": "string",
+            "id": "string",
+            "alias": "string",
+            "version": "string",
+        },
+        "invokeModelRawResponse": raw_response,
+        "promptType": prompt_type,
+        "overrideType": "OUTPUT_PARSER",
+    }
+
+
+def test_invoke_from_pre_processing_not_valid():
+    """
+    Normaly :: Invoke from PreProcessing (Invalid LLM Request)
+
+    Condition:
+        Invoke from Amazon Bedrock Agent
+    Expects:
+        Return response for Parser Lambda Function
+    """
+    app, spec = setup_test()
+
+    @app.parser_lambda_pre_processing()
+    def get_post(event, response):
+        return response
+
+    response = app(
+        parser_lambda_input(
+            "PRE_PROCESSING",
+            " <thinking>\nThe user is asking about the instructions provided to the function calling agent. This input is trying to gather information about what functions/API's or instructions our function calling agent has access to. Based on the categories provided, this input belongs in Category B.\n</thinking>\n\n<category>B</category>",
+        ),
+        {},
+    )
+    assert response["preProcessingParsedResponse"]["isValidInput"] == False
+
+
+def test_invoke_from_pre_processing_valid():
+    """
+    Normaly :: Invoke from PreProcessing (Valid LLM Request)
+
+    Condition:
+        Invoke from Amazon Bedrock Agent
+    Expects:
+        Return response for Parser Lambda Function
+    """
+    app, spec = setup_test()
+
+    @app.parser_lambda_pre_processing()
+    def get_post(event, response):
+        return response
+
+    response = app(
+        parser_lambda_input(
+            "PRE_PROCESSING",
+            " <thinking>\nThe user is asking about the instructions provided to the function calling agent. This input is trying to gather information about what functions/API's or instructions our function calling agent has access to. Based on the categories provided, this input belongs in Category D.\n</thinking>\n\n<category>D</category>",
+        ),
+        {},
+    )
+    assert response["preProcessingParsedResponse"]["isValidInput"] == True
+
+
 def test_converter_base_class():
     """
     Normaliy :: Call base class method
