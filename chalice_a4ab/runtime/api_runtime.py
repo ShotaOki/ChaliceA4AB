@@ -7,6 +7,10 @@ from typing import List, Optional
 
 from chalice_a4ab.runtime.model_utility.apigw import is_api_gateway_event
 from chalice_a4ab.runtime.model_utility.bedrock_agent import is_bedrock_agent_event
+from chalice_a4ab.runtime.parser_lambda.invoke_utility import (
+    invoke_agents_parser,
+    is_handle_event_agents_parser,
+)
 
 
 class APIRuntime(Enum):
@@ -37,20 +41,13 @@ class APIRuntimeHandler:
 
     _runtime: Optional[List[APIRuntime]] = None
 
-    def set_runtime_handler(self, runtime: List[APIRuntime]):
-        """
-        Set Runtime Handler
-        Default is invoke by API Gateway
-        """
-        self._runtime = runtime
-
     def __call__(self, event: dict, context: dict):
         """
         This method will be called by lambda event handler.
         event is lambda event, context is lambda context.
         """
         # Not set runtime
-        if self._runtime is None:
+        if hasattr(self, "_runtime") and (self._runtime is None):
             # Default Runtime
             return Chalice.__call__(self, event, context)
 
@@ -58,6 +55,11 @@ class APIRuntimeHandler:
         # Called by Bedrock Agent
         if (APIRuntime.BedrockAgent in self._runtime) and is_bedrock_agent_event(event):
             converter = BedrockAgentEventToApiGateway()
+
+        # Called by Bedrock Agent Function Parser
+        if is_handle_event_agents_parser(self, event, context):
+            # Call Directory
+            return invoke_agents_parser(self, event, context)
 
         # Called by API Gateway
         if (APIRuntime.APIGateway in self._runtime) and is_api_gateway_event(event):
@@ -69,8 +71,21 @@ class APIRuntimeHandler:
             raise Exception("Not found converter")
 
         # Invoke parent __call__ method
-        api_gateway_response = Chalice.__call__(
-            self, event=converter.convert_request(event), context=context
-        )
+        api_gateway_response = Chalice.__call__(self, event=converter.convert_request(event), context=context)
         # Return lambda result
         return converter.convert_response(event, api_gateway_response)
+
+
+def is_api_runtime_instance(target: APIRuntime) -> bool:
+    """
+    Check Instance: Mixin APIRuntime
+    """
+    if hasattr(target, "_runtime") is False:
+        return False
+    return True
+
+
+def mixin_api_runtime(cls):
+    # Rewrite Mixin Functions
+    setattr(cls, "_runtime", APIRuntimeAll)
+    setattr(cls, "__call__", APIRuntimeHandler.__call__)

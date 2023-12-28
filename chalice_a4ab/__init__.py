@@ -1,10 +1,12 @@
 from typing import Type
 from chalice.app import Chalice as AWSChalice
 
+from chalice_a4ab.runtime.parser_lambda.agents_parser import AgentsParserFunction
+from chalice_a4ab.runtime.parser_lambda.exceptions import ParserLambdaAbortException  # noqa: F401
 from .chalice_plugin import (  # noqa: F401
     agents_for_amazon_bedrock,
-    AgentsForAmazonBedrockConfig,
 )
+from .agents_for_amazon_bedrock_config import AgentsForAmazonBedrockConfig  # noqa: F401
 
 
 try:
@@ -30,5 +32,10 @@ except Exception:
         pass
 
 
+# Define Class Type
+class ChaliceType(AWSChalice, AgentsParserFunction):
+    pass
+
+
 # Public functions
-Chalice: Type[AWSChalice] = _Chalice
+Chalice: Type[ChaliceType] = _Chalice
