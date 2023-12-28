@@ -23,17 +23,14 @@ def create_response_from_expception(input_event: dict, exception: Exception) -> 
 
     response = ParserLambdaResponseModel(messageVersion=input.message_version, promptType=input.prompt_type)
     if input.prompt_type == PromptType.PRE_PROCESSING:
-        response.pre_processing_parsed_response = PreProcessingResponseModel(isValidInput=True, rationale=message)
+        response.pre_processing_parsed_response = PreProcessingResponseModel(isValidInput=False, rationale=message)
     elif input.prompt_type == PromptType.ORCHESTRATION:
         response.orchestration_parsed_response = OrchestrationResponseModel(
             rationale=message,
             responseDetails=u(ResponseDetailsModel).parse_obj(
                 {
-                    "invocationType": "AGENT_FINAL_RESPONSE",
-                    "agentFinalResponse": {
-                        "responseText": message,
-                        "citations": {"generatedResponseParts": []},
-                    },
+                    "invocationType": "FINISH",
+                    "agentFinalResponse": {"responseText": message},
                 }
             ),
         )

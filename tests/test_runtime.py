@@ -238,7 +238,9 @@ def test_invoke_from_orchestration_action_group_has_variable():
     )
     assert "orchestrationParsedResponse" in response
     assert response["orchestrationParsedResponse"]["responseDetails"]["invocationType"] == "ACTION_GROUP"
-    assert response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["actionGroup"] == "Main"
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["actionGroupName"] == "Main"
+    )
     assert response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["apiName"] == "/talk"
     assert response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["verb"] == "post"
 
@@ -267,7 +269,9 @@ def test_invoke_from_orchestration_action_group_no_variable():
     )
     assert "orchestrationParsedResponse" in response
     assert response["orchestrationParsedResponse"]["responseDetails"]["invocationType"] == "ACTION_GROUP"
-    assert response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["actionGroup"] == "Main"
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["actionGroupName"] == "Main"
+    )
     assert response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["apiName"] == "/hello"
 
 
@@ -299,7 +303,9 @@ def test_invoke_from_multi_expects():
     )
     assert "orchestrationParsedResponse" in response
     assert response["orchestrationParsedResponse"]["responseDetails"]["invocationType"] == "ACTION_GROUP"
-    assert response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["actionGroup"] == "Main"
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["actionGroupName"] == "Main"
+    )
     assert response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["apiName"] == "/hello"
 
 

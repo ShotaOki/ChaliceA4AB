@@ -37,7 +37,7 @@ class ActionGroupInvocationModel(BaseModel):
     action_group_name: str = Field(alias="actionGroupName")
     api_name: str = Field(alias="apiName")
     verb: str
-    action_group_input: Optional[dict] = Field(alias="actionGroupInput")
+    action_group_input: Optional[dict] = Field(None, alias="actionGroupInput")
 
 
 class AgentKnowledgeBaseModel(BaseModel):
@@ -47,15 +47,15 @@ class AgentKnowledgeBaseModel(BaseModel):
 
 class AgentFinalResponseModel(BaseModel):
     response_text: str = Field(alias="responseText")
-    citations: dict
+    citations: Optional[dict] = Field(None, alias="citations")
 
 
 class ResponseDetailsModel(BaseModel):
     invocation_type: str = Field(alias="invocationType")
-    agent_ask_user: Optional[AgentAskUserModel] = Field(alias="agentAskUser")
-    action_group_invocation: Optional[ActionGroupInvocationModel] = Field(alias="actionGroupInvocation")
-    agent_knowledge_base: Optional[AgentKnowledgeBaseModel] = Field(alias="agentKnowledgeBase")
-    agent_final_response: Optional[AgentFinalResponseModel] = Field(alias="agentFinalResponse")
+    agent_ask_user: Optional[AgentAskUserModel] = Field(None, alias="agentAskUser")
+    action_group_invocation: Optional[ActionGroupInvocationModel] = Field(None, alias="actionGroupInvocation")
+    agent_knowledge_base: Optional[AgentKnowledgeBaseModel] = Field(None, alias="agentKnowledgeBase")
+    agent_final_response: Optional[AgentFinalResponseModel] = Field(None, alias="agentFinalResponse")
 
 
 class ParsingErrorDetailsModel(BaseModel):
@@ -64,15 +64,17 @@ class ParsingErrorDetailsModel(BaseModel):
 
 class OrchestrationResponseModel(BaseModel):
     rationale: str
-    parsing_error_details: Optional[ParsingErrorDetailsModel] = Field(alias="parsingErrorDetails")
+    parsing_error_details: Optional[ParsingErrorDetailsModel] = Field(None, alias="parsingErrorDetails")
     response_details: ResponseDetailsModel = Field(alias="responseDetails")
 
 
 class ParserLambdaResponseModel(BaseModel):
-    message_version: Optional[str] = Field(alias="messageVersion")
+    message_version: Optional[str] = Field(None, alias="messageVersion")
     prompt_type: PromptType = Field(alias="promptType")
-    pre_processing_parsed_response: Optional[PreProcessingResponseModel] = Field(alias="preProcessingParsedResponse")
-    orchestration_parsed_response: Optional[dict] = Field(alias="orchestrationParsedResponse")
+    pre_processing_parsed_response: Optional[PreProcessingResponseModel] = Field(
+        None, alias="preProcessingParsedResponse"
+    )
+    orchestration_parsed_response: Optional[dict] = Field(None, alias="orchestrationParsedResponse")
 
     class Config:
         use_enum_values = True

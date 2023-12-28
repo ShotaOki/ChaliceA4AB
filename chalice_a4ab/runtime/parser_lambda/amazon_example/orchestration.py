@@ -240,7 +240,7 @@ def parse_function_call(sanitized_response, parsed_response):
     parsed_response["orchestrationParsedResponse"]["responseDetails"]["invocationType"] = "ACTION_GROUP"
     parsed_response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"] = {
         "verb": verb,
-        "actionGroup": resource_name,
+        "actionGroupName": resource_name,
         "apiName": function,
         "actionGroupInput": parameters,
     }
