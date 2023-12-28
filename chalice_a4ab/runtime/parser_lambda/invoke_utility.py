@@ -12,10 +12,11 @@ from chalice_a4ab.runtime.parser_lambda.amazon_example.pre_processing import (
 from chalice_a4ab.runtime.parser_lambda.amazon_example.orchestration import (
     lambda_handler as orchestration_lambda_handler,
 )
+from chalice_a4ab.runtime.parser_lambda.exceptions import create_response_from_expception
 from chalice_a4ab.runtime.pydantic_tool.utility import PydanticUtility as u
 
 
-def _invoke_agents_with_function(event, context, parser_function, handler):
+def _invoke_agents_with_function(event, context, parser_function, handler) -> dict:
     """
     Invoke agents parser function(Common process)
     """
@@ -29,9 +30,7 @@ def _invoke_agents_with_function(event, context, parser_function, handler):
     return handled_parsed_model
 
 
-def is_handle_event_agents_parser(
-    target: AgentsParserFunction, event: dict, context: dict
-) -> bool:
+def is_handle_event_agents_parser(target: AgentsParserFunction, event: dict, context: dict) -> bool:
     if is_agents_parser_instance(target) is False:
         # call from mixin class
         return False
@@ -48,14 +47,14 @@ def invoke_agents_parser(target: AgentsParserFunction, event: dict, context: dic
     if is_agents_parser_instance(target) is False:
         # call from mixin class
         return False
-    for handler in target._parser_function_handlers:
-        if handler.is_handle_event(event, context):
-            if handler._prompt_type == PromptType.PRE_PROCESSING:
-                return _invoke_agents_with_function(
-                    event, context, pre_processing_lambda_handler, handler
-                )
-            if handler._prompt_type == PromptType.ORCHESTRATION:
-                return _invoke_agents_with_function(
-                    event, context, orchestration_lambda_handler, handler
-                )
-    return {}
+    failed_event = {}
+    try:
+        for handler in target._parser_function_handlers:
+            if handler.is_handle_event(event, context):
+                if handler._prompt_type == PromptType.PRE_PROCESSING:
+                    return _invoke_agents_with_function(event, context, pre_processing_lambda_handler, handler)
+                if handler._prompt_type == PromptType.ORCHESTRATION:
+                    return _invoke_agents_with_function(event, context, orchestration_lambda_handler, handler)
+    except Exception as e:
+        failed_event = create_response_from_expception(event, e)
+    return failed_event

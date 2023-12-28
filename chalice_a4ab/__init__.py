@@ -33,9 +33,9 @@ except Exception:
 
 
 # Define Class Type
-class MixinChaliceClassType(AWSChalice, AgentsParserFunction):
+class ChaliceType(AWSChalice, AgentsParserFunction):
     pass
 
 
 # Public functions
-Chalice: Type[MixinChaliceClassType] = _Chalice
+Chalice: Type[ChaliceType] = _Chalice

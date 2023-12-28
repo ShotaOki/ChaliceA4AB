@@ -47,10 +47,6 @@ def sanitize_response(text):
 
 
 def get_is_valid_input(category):
-    if (
-        category is not None
-        and category.strip().upper() == "D"
-        or category.strip().upper() == "E"
-    ):
+    if category is not None and category.strip().upper() == "D" or category.strip().upper() == "E":
         return True
     return False

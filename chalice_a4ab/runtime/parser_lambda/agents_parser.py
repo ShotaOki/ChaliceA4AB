@@ -17,13 +17,9 @@ class ParserFunctionEventHandler:
     def __call__(self, event: dict, context: dict):
         return self._handler(event, context)
 
-    def _check_event_type(
-        self, required_type: PromptType, event: dict, context: dict
-    ) -> bool:
+    def _check_event_type(self, required_type: PromptType, event: dict, context: dict) -> bool:
         try:
-            response: ParserLambdaInputModel = u(ParserLambdaInputModel).parse_obj(
-                event
-            )
+            response: ParserLambdaInputModel = u(ParserLambdaInputModel).parse_obj(event)
             if response.prompt_type == required_type:
                 return True
             return False
@@ -39,18 +35,14 @@ class AgentsParserFunction:
 
     def parser_lambda_pre_processing(self):
         def register_handler(event_function: Callable[..., Any]):
-            wrapper = ParserFunctionEventHandler(
-                PromptType.PRE_PROCESSING, event_function
-            )
+            wrapper = ParserFunctionEventHandler(PromptType.PRE_PROCESSING, event_function)
             self._parser_function_handlers.append(wrapper)
 
         return register_handler
 
     def parser_lambda_orchestration(self):
         def register_handler(event_function: Callable[..., Any]):
-            wrapper = ParserFunctionEventHandler(
-                PromptType.ORCHESTRATION, event_function
-            )
+            wrapper = ParserFunctionEventHandler(PromptType.ORCHESTRATION, event_function)
             self._parser_function_handlers.append(wrapper)
 
         return register_handler

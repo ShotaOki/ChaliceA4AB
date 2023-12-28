@@ -42,18 +42,14 @@ class BedrockAgentEventModel(BaseModel):
     # session_attributes – Contains session attributes and their values.
     session_attributes: Dict[str, str] = Field({}, alias="sessionAttributes")
     # prompt_session_attributes – Contains prompt attributes and their values.
-    prompt_session_attributes: Dict[str, str] = Field(
-        {}, alias="promptSessionAttributes"
-    )
+    prompt_session_attributes: Dict[str, str] = Field({}, alias="promptSessionAttributes")
     # Contains information about the name, ID, alias, and version of the agent that the action group belongs to.
     agent: BedrockAgentModel
     # parameters – Contains a list of objects. Each object contains the name, type,
     # and value of a parameter in the API operation, as defined in the OpenAPI schema.
     parameters: Optional[List[BedrockAgentPropertyModel]] = None
     # requestBody – Contains the request body and its properties, as defined in the OpenAPI schema.
-    request_body: Optional[BedrockAgentRequestBodyModel] = Field(
-        None, alias="requestBody"
-    )
+    request_body: Optional[BedrockAgentRequestBodyModel] = Field(None, alias="requestBody")
 
 
 class BedrockAgentResponsePesponceBodyModel(BaseModel):
@@ -79,25 +75,17 @@ class BedrockAgentResponseParameterModel(BaseModel):
     # Status Code
     http_status_code: int = Field(..., alias="httpStatusCode")
     # Contains the response body, as defined in the OpenAPI schema.
-    response_body: Dict[str, BedrockAgentResponsePesponceBodyModel] = Field(
-        ..., alias="responseBody"
-    )
+    response_body: Dict[str, BedrockAgentResponsePesponceBodyModel] = Field(..., alias="responseBody")
     # (Optional) sessionAttributes – Contains session attributes and their values.
-    session_attributes: Optional[Dict[str, str]] = Field(
-        None, alias="sessionAttributes"
-    )
+    session_attributes: Optional[Dict[str, str]] = Field(None, alias="sessionAttributes")
     # (Optional) promptSessionAttributes – Contains prompt attributes and their values.
-    prompt_session_attributes: Optional[Dict[str, str]] = Field(
-        None, alias="promptSessionAttributes"
-    )
+    prompt_session_attributes: Optional[Dict[str, str]] = Field(None, alias="promptSessionAttributes")
 
     def add_response_body(self, content_type: str, body: str) -> None:
         """
         Add response body
         """
-        self.response_body[content_type] = BedrockAgentResponsePesponceBodyModel(
-            body=body
-        )
+        self.response_body[content_type] = BedrockAgentResponsePesponceBodyModel(body=body)
 
 
 class BedrockAgentResponseModel(BaseModel):

@@ -53,15 +53,9 @@ class AgentFinalResponseModel(BaseModel):
 class ResponseDetailsModel(BaseModel):
     invocation_type: str = Field(alias="invocationType")
     agent_ask_user: Optional[AgentAskUserModel] = Field(alias="agentAskUser")
-    action_group_invocation: Optional[ActionGroupInvocationModel] = Field(
-        alias="actionGroupInvocation"
-    )
-    agent_knowledge_base: Optional[AgentKnowledgeBaseModel] = Field(
-        alias="agentKnowledgeBase"
-    )
-    agent_final_response: Optional[AgentFinalResponseModel] = Field(
-        alias="agentFinalResponse"
-    )
+    action_group_invocation: Optional[ActionGroupInvocationModel] = Field(alias="actionGroupInvocation")
+    agent_knowledge_base: Optional[AgentKnowledgeBaseModel] = Field(alias="agentKnowledgeBase")
+    agent_final_response: Optional[AgentFinalResponseModel] = Field(alias="agentFinalResponse")
 
 
 class ParsingErrorDetailsModel(BaseModel):
@@ -70,21 +64,15 @@ class ParsingErrorDetailsModel(BaseModel):
 
 class OrchestrationResponseModel(BaseModel):
     rationale: str
-    parsing_error_details: Optional[ParsingErrorDetailsModel] = Field(
-        alias="parsingErrorDetails"
-    )
+    parsing_error_details: Optional[ParsingErrorDetailsModel] = Field(alias="parsingErrorDetails")
     response_details: ResponseDetailsModel = Field(alias="responseDetails")
 
 
 class ParserLambdaResponseModel(BaseModel):
     message_version: Optional[str] = Field(alias="messageVersion")
     prompt_type: PromptType = Field(alias="promptType")
-    pre_processing_parsed_response: Optional[PreProcessingResponseModel] = Field(
-        alias="preProcessingParsedResponse"
-    )
-    orchestration_parsed_response: Optional[dict] = Field(
-        alias="orchestrationParsedResponse"
-    )
+    pre_processing_parsed_response: Optional[PreProcessingResponseModel] = Field(alias="preProcessingParsedResponse")
+    orchestration_parsed_response: Optional[dict] = Field(alias="orchestrationParsedResponse")
 
     class Config:
         use_enum_values = True

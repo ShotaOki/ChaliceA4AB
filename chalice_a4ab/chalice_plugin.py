@@ -121,9 +121,7 @@ class AgentsForAmazonBedrockConfig(BaseModel):
         if json_data is None:
             return False
         # Save Json Schema
-        with open(
-            str(Path(root_path) / self.schema_file), mode="w", encoding="utf-8"
-        ) as fp:
+        with open(str(Path(root_path) / self.schema_file), mode="w", encoding="utf-8") as fp:
             fp.write(json_data)
             return True
 

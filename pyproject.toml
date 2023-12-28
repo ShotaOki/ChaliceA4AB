@@ -25,6 +25,19 @@ black = "^23.1"
 [tool.poetry.scripts]
 chalice-a4ab = "chalice_a4ab.cli:main"
 
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--cov=chalice_a4ab --cov-report xml"
+testpaths = [
+    "tests"
+]
+
+[tool.coverage.report]
+omit = [
+    "*/cli/*.py",
+    "*/amazon_example/*.py",
+]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

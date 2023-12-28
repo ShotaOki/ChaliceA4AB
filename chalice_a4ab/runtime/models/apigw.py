@@ -69,9 +69,7 @@ class APIGatewayEventRequestContext(BaseModel):
     def check_message_id(cls, values):
         message_id, event_type = values.get("messageId"), values.get("eventType")
         if message_id is not None and event_type != "MESSAGE":
-            raise ValueError(
-                "messageId is available only when the `eventType` is `MESSAGE`"
-            )
+            raise ValueError("messageId is available only when the `eventType` is `MESSAGE`")
         return values
 
 

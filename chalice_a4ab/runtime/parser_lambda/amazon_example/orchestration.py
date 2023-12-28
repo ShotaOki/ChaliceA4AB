@@ -11,9 +11,7 @@ RATIONALE_VALUE_REGEX_LIST = [
     "(.*?)(</scratchpad>)",
     "(<scratchpad>)(.*?)",
 ]
-RATIONALE_VALUE_PATTERNS = [
-    re.compile(regex, re.DOTALL) for regex in RATIONALE_VALUE_REGEX_LIST
-]
+RATIONALE_VALUE_PATTERNS = [re.compile(regex, re.DOTALL) for regex in RATIONALE_VALUE_REGEX_LIST]
 
 ANSWER_REGEX = r"(?<=<answer>)(.*)"
 ANSWER_PATTERN = re.compile(ANSWER_REGEX, re.DOTALL)
@@ -25,15 +23,11 @@ ASK_USER_FUNCTION_CALL_REGEX = r"(<function_call>user::askuser)(.*)\)"
 ASK_USER_FUNCTION_CALL_PATTERN = re.compile(ASK_USER_FUNCTION_CALL_REGEX, re.DOTALL)
 
 ASK_USER_FUNCTION_PARAMETER_REGEX = r"(?<=askuser=\")(.*?)\""
-ASK_USER_FUNCTION_PARAMETER_PATTERN = re.compile(
-    ASK_USER_FUNCTION_PARAMETER_REGEX, re.DOTALL
-)
+ASK_USER_FUNCTION_PARAMETER_PATTERN = re.compile(ASK_USER_FUNCTION_PARAMETER_REGEX, re.DOTALL)
 
 KNOWLEDGE_STORE_SEARCH_ACTION_PREFIX = "x_amz_knowledgebase_"
 
-FUNCTION_CALL_REGEX = (
-    r"<function_call>(\w+)::(\w+)::(.+)\((.*)\)"  # Allow Empty Parameter
-)
+FUNCTION_CALL_REGEX = r"<function_call>(\w+)::(\w+)::(.+)\((.*)\)"  # Allow Empty Parameter
 
 ANSWER_PART_REGEX = "<answer_part\\s?>(.+?)</answer_part\\s?>"
 ANSWER_TEXT_PART_REGEX = "<text\\s?>(.+?)</text\\s?>"
@@ -43,7 +37,9 @@ ANSWER_TEXT_PART_PATTERN = re.compile(ANSWER_TEXT_PART_REGEX, re.DOTALL)
 ANSWER_REFERENCE_PART_PATTERN = re.compile(ANSWER_REFERENCE_PART_REGEX, re.DOTALL)
 
 # You can provide messages to reprompt the LLM in case the LLM output is not in the expected format
-MISSING_API_INPUT_FOR_USER_REPROMPT_MESSAGE = "Missing the argument askuser for user::askuser function call. Please try again with the correct argument added"
+MISSING_API_INPUT_FOR_USER_REPROMPT_MESSAGE = (
+    "Missing the argument askuser for user::askuser function call. Please try again with the correct argument added"
+)
 ASK_USER_FUNCTION_CALL_STRUCTURE_REMPROMPT_MESSAGE = 'The function call format is incorrect. The format for function calls to the askuser function must be: <function_call>user::askuser(askuser="$ASK_USER_INPUT")</function_call>.'
 FUNCTION_CALL_STRUCTURE_REPROMPT_MESSAGE = 'The function call format is incorrect. The format for function calls must be: <function_call>$FUNCTION_NAME($FUNCTION_ARGUMENT_NAME=""$FUNCTION_ARGUMENT_NAME"")</function_call>.'
 
@@ -80,9 +76,9 @@ def lambda_handler(event, context):
         }
 
         if generated_response_parts:
-            parsed_response["orchestrationParsedResponse"]["responseDetails"][
-                "agentFinalResponse"
-            ]["citations"] = {"generatedResponseParts": generated_response_parts}
+            parsed_response["orchestrationParsedResponse"]["responseDetails"]["agentFinalResponse"]["citations"] = {
+                "generatedResponseParts": generated_response_parts
+            }
 
         logger.info("Final answer parsed response: " + str(parsed_response))
         return parsed_response
@@ -127,11 +123,7 @@ def sanitize_response(text):
 def parse_rationale(sanitized_response):
     # Checks for strings that are not required for orchestration
     rationale_matcher = next(
-        (
-            pattern.search(sanitized_response)
-            for pattern in RATIONALE_PATTERNS
-            if pattern.search(sanitized_response)
-        ),
+        (pattern.search(sanitized_response) for pattern in RATIONALE_PATTERNS if pattern.search(sanitized_response)),
         None,
     )
 
@@ -140,11 +132,7 @@ def parse_rationale(sanitized_response):
 
         # Check if there is a formatted rationale that we can parse from the string
         rationale_value_matcher = next(
-            (
-                pattern.search(rationale)
-                for pattern in RATIONALE_VALUE_PATTERNS
-                if pattern.search(rationale)
-            ),
+            (pattern.search(rationale) for pattern in RATIONALE_VALUE_PATTERNS if pattern.search(rationale)),
             None,
         )
         if rationale_value_matcher:
@@ -211,9 +199,7 @@ def parse_ask_user(sanitized_llm_response):
     if ask_user_matcher:
         try:
             ask_user = ask_user_matcher.group(2).strip()
-            ask_user_question_matcher = ASK_USER_FUNCTION_PARAMETER_PATTERN.search(
-                ask_user
-            )
+            ask_user_question_matcher = ASK_USER_FUNCTION_PARAMETER_PATTERN.search(ask_user)
             if ask_user_question_matcher:
                 return ask_user_question_matcher.group(1).strip()
             raise ValueError(MISSING_API_INPUT_FOR_USER_REPROMPT_MESSAGE)
@@ -243,26 +229,16 @@ def parse_function_call(sanitized_response, parsed_response):
     # Function calls can either invoke an action group or a knowledge base.
     # Mapping to the correct variable names accordingly
     if resource_name.lower().startswith(KNOWLEDGE_STORE_SEARCH_ACTION_PREFIX):
-        parsed_response["orchestrationParsedResponse"]["responseDetails"][
-            "invocationType"
-        ] = "KNOWLEDGE_BASE"
-        parsed_response["orchestrationParsedResponse"]["responseDetails"][
-            "agentKnowledgeBase"
-        ] = {
+        parsed_response["orchestrationParsedResponse"]["responseDetails"]["invocationType"] = "KNOWLEDGE_BASE"
+        parsed_response["orchestrationParsedResponse"]["responseDetails"]["agentKnowledgeBase"] = {
             "searchQuery": parameters["searchQuery"],
-            "knowledgeBaseId": resource_name.replace(
-                KNOWLEDGE_STORE_SEARCH_ACTION_PREFIX, ""
-            ),
+            "knowledgeBaseId": resource_name.replace(KNOWLEDGE_STORE_SEARCH_ACTION_PREFIX, ""),
         }
 
         return parsed_response
 
-    parsed_response["orchestrationParsedResponse"]["responseDetails"][
-        "invocationType"
-    ] = "ACTION_GROUP"
-    parsed_response["orchestrationParsedResponse"]["responseDetails"][
-        "actionGroupInvocation"
-    ] = {
+    parsed_response["orchestrationParsedResponse"]["responseDetails"]["invocationType"] = "ACTION_GROUP"
+    parsed_response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"] = {
         "verb": verb,
         "actionGroup": resource_name,
         "apiName": function,
@@ -276,6 +252,4 @@ def addRepromptResponse(parsed_response, error):
     error_message = str(error)
     logger.warn(error_message)
 
-    parsed_response["orchestrationParsedResponse"]["parsingErrorDetails"] = {
-        "repromptResponse": error_message
-    }
+    parsed_response["orchestrationParsedResponse"]["parsingErrorDetails"] = {"repromptResponse": error_message}
