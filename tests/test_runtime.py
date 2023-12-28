@@ -380,7 +380,6 @@ def test_invoke_from_orchestration_action_group_has_variable():
         ]["verb"]
         == "post"
     )
-    print(response)
 
 
 def test_invoke_from_orchestration_action_group_no_variable():
@@ -406,7 +405,23 @@ def test_invoke_from_orchestration_action_group_no_variable():
         {},
     )
     assert "orchestrationParsedResponse" in response
-    print(response)
+    assert "orchestrationParsedResponse" in response
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"]["invocationType"]
+        == "ACTION_GROUP"
+    )
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"][
+            "actionGroupInvocation"
+        ]["actionGroup"]
+        == "Main"
+    )
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"][
+            "actionGroupInvocation"
+        ]["apiName"]
+        == "/hello"
+    )
 
 
 def test_converter_base_class():

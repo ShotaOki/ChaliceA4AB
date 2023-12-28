@@ -31,7 +31,9 @@ ASK_USER_FUNCTION_PARAMETER_PATTERN = re.compile(
 
 KNOWLEDGE_STORE_SEARCH_ACTION_PREFIX = "x_amz_knowledgebase_"
 
-FUNCTION_CALL_REGEX = r"<function_call>(\w+)::(\w+)::(.+)\((.+)\)"
+FUNCTION_CALL_REGEX = (
+    r"<function_call>(\w+)::(\w+)::(.+)\((.*)\)"  # Allow Empty Parameter
+)
 
 ANSWER_PART_REGEX = "<answer_part\\s?>(.+?)</answer_part\\s?>"
 ANSWER_TEXT_PART_REGEX = "<text\\s?>(.+?)</text\\s?>"
@@ -231,9 +233,10 @@ def parse_function_call(sanitized_response, parsed_response):
     verb, resource_name, function = match.group(1), match.group(2), match.group(3)
 
     parameters = {}
-    for arg in match.group(4).split(","):
-        key, value = arg.split("=")
-        parameters[key.strip()] = {"value": value.strip('" ')}
+    if len(match.group(4)) >= 1:  # Condition : Not Empty Parameter
+        for arg in match.group(4).split(","):
+            key, value = arg.split("=")
+            parameters[key.strip()] = {"value": value.strip('" ')}
 
     parsed_response["orchestrationParsedResponse"]["responseDetails"] = {}
 
