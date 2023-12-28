@@ -33,9 +33,7 @@ def main():
         # Parse from chalice/app.py
         app_module = import_module("app", package=args.appname)
         # Get Config from chalice/app.py
-        config: AgentsForAmazonBedrockConfig = (
-            app_module.AgentsForAmazonBedrockConfig.get_global_config()
-        )
+        config: AgentsForAmazonBedrockConfig = app_module.AgentsForAmazonBedrockConfig.get_global_config()
         # Get Template File
         template_file = str(Path(__file__).parent / "template.yaml")
         # Get Identity (Boto3 Config)

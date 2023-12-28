@@ -3,6 +3,8 @@ import boto3
 from pydantic import BaseModel, Field
 from hashlib import md5
 import io
+from chalice_a4ab.cli.agent_model import AgentModelEditable, AgentModelReadonly
+from chalice_a4ab.runtime.models.parser_lambda import PromptType
 from chalice_a4ab.runtime.pydantic_tool.utility import PydanticUtility as u
 from chalice_a4ab import AgentsForAmazonBedrockConfig
 
@@ -88,9 +90,7 @@ class CurrentAgentInfo(BaseModel):
     agent_status: str
 
 
-def read_current_agent_info(
-    identity: CallerIdentity, bedrock_agent
-) -> CurrentAgentInfo:
+def read_current_agent_info(identity: CallerIdentity, bedrock_agent) -> CurrentAgentInfo:
     """
     Read Current Agent Info From AWS Cloud
     """
@@ -192,9 +192,32 @@ def create_resource(template_file: str, identity: CallerIdentity, cfn):
         cfn.update_stack(**parameter)
 
 
-def init(
-    identity: CallerIdentity, config: AgentsForAmazonBedrockConfig, template_path: str
+def get_agent_info(bedrock_agent, agent_id: str):
+    response = bedrock_agent.get_agent(agentId=agent_id)
+    agent_editable: AgentModelEditable = u(AgentModelEditable).parse_obj(response["agent"])
+    agent_readonly: AgentModelReadonly = u(AgentModelReadonly).parse_obj(response["agent"])
+    return (agent_editable, agent_readonly)
+
+
+def update_editable_agent_with_override_lambda(
+    identity: CallerIdentity, config: AgentsForAmazonBedrockConfig, editable_agent: AgentModelEditable
 ):
+    # Parser Lambda Setting
+    for type in [
+        PromptType.PRE_PROCESSING,
+        PromptType.ORCHESTRATION,
+        PromptType.POST_PROCESSING,
+        PromptType.KNOWLEDGE_BASE_RESPONSE_GENERATION,
+    ]:
+        if type in config._enabled_prompt_type_list:
+            editable_agent.set_enable_configration(type, True)
+        else:
+            editable_agent.set_enable_configration(type, False)
+    if len(config._enabled_prompt_type_list) >= 1:
+        editable_agent.prompt_override_configuration.override_lambda = identity.lambda_arn
+
+
+def init(identity: CallerIdentity, config: AgentsForAmazonBedrockConfig, template_path: str):
     """
     Command : init
 
@@ -217,9 +240,7 @@ def init(
     bucket = identity.session.resource("s3").Bucket(identity.bucket_name)
     with io.BytesIO(config.agents_for_bedrock_schema_json().encode("utf-8")) as fp:
         bucket.upload_fileobj(fp, identity.AgentConfig.schema_file)
-    print(
-        f"- Uploaded OpenAPI schema file to {identity.bucket_name}/{identity.AgentConfig.schema_file}"
-    )
+    print(f"- Uploaded OpenAPI schema file to {identity.bucket_name}/{identity.AgentConfig.schema_file}")
 
     # Create Agent for Amazon Bedrock
     bedrock_agent = identity.session.client("bedrock-agent")
@@ -247,6 +268,12 @@ def init(
         else:
             # Success to create agent
             break
+
+    # Get Current Agent
+    editable_agent, readonly_agent = get_agent_info(bedrock_agent, agent_id)
+    update_editable_agent_with_override_lambda(identity, config, editable_agent)
+    # Apply Status
+    bedrock_agent.update_agent(**u(editable_agent).dict(by_alias=True, exclude_none=True))
 
     # Create Agent Action Group
     bedrock_agent.create_agent_action_group(
@@ -302,9 +329,7 @@ def init(
     print("completed")
 
 
-def sync(
-    identity: CallerIdentity, config: AgentsForAmazonBedrockConfig, template_path: str
-):
+def sync(identity: CallerIdentity, config: AgentsForAmazonBedrockConfig, template_path: str):
     """
     Command : sync
 
@@ -319,9 +344,7 @@ def sync(
     bucket = identity.session.resource("s3").Bucket(identity.bucket_name)
     with io.BytesIO(config.agents_for_bedrock_schema_json().encode("utf-8")) as fp:
         bucket.upload_fileobj(fp, identity.AgentConfig.schema_file)
-    print(
-        f"- Uploaded OpenAPI schema file to {identity.bucket_name}/{identity.AgentConfig.schema_file}"
-    )
+    print(f"- Uploaded OpenAPI schema file to {identity.bucket_name}/{identity.AgentConfig.schema_file}")
 
     # Get Current Agent Setting
     agent_info = read_current_agent_info(identity, bedrock_agent)
@@ -330,16 +353,15 @@ def sync(
         return
 
     # Get Current Agent
-    current_agent = bedrock_agent.get_agent(agentId=agent_info.agent_id)["agent"]
-    bedrock_agent.update_agent(
-        agentId=agent_info.agent_id,
-        agentName=current_agent["agentName"],
-        instruction=identity.AgentConfig.instructions,
-        foundationModel=identity.AgentConfig.foundation_model,
-        description=identity.AgentConfig.description,
-        idleSessionTTLInSeconds=identity.AgentConfig.idle_session_ttl_in_seconds,
-        agentResourceRoleArn=identity.agents_role_arn,
-    )
+    editable_agent, readonly_agent = get_agent_info(bedrock_agent, agent_info.agent_id)
+    editable_agent.instruction = identity.AgentConfig.instructions
+    editable_agent.foundation_model = identity.AgentConfig.foundation_model
+    editable_agent.description = identity.AgentConfig.description
+    editable_agent.idle_session_ttl_in_seconds = identity.AgentConfig.idle_session_ttl_in_seconds
+    editable_agent.agent_resource_role_arn = identity.agents_role_arn
+    update_editable_agent_with_override_lambda(identity, config, editable_agent)
+    # Apply Status
+    bedrock_agent.update_agent(**u(editable_agent).dict(by_alias=True, exclude_none=True))
 
     # Get Current Agent Action Group
     response = bedrock_agent.get_agent_action_group(
@@ -356,18 +378,12 @@ def sync(
         actionGroupId=response["agentActionGroup"]["actionGroupId"],
         actionGroupName=response["agentActionGroup"]["actionGroupName"],
         description=identity.AgentConfig.description,
-        actionGroupExecutor={
-            "lambda": response["agentActionGroup"]["actionGroupExecutor"]["lambda"]
-        },
+        actionGroupExecutor={"lambda": response["agentActionGroup"]["actionGroupExecutor"]["lambda"]},
         actionGroupState="ENABLED",
         apiSchema={
             "s3": {
-                "s3BucketName": response["agentActionGroup"]["apiSchema"]["s3"][
-                    "s3BucketName"
-                ],
-                "s3ObjectKey": response["agentActionGroup"]["apiSchema"]["s3"][
-                    "s3ObjectKey"
-                ],
+                "s3BucketName": response["agentActionGroup"]["apiSchema"]["s3"]["s3BucketName"],
+                "s3ObjectKey": response["agentActionGroup"]["apiSchema"]["s3"]["s3ObjectKey"],
             }
         },
     )
@@ -382,9 +398,7 @@ def sync(
     print("completed")
 
 
-def delete(
-    identity: CallerIdentity, config: AgentsForAmazonBedrockConfig, template_path: str
-):
+def delete(identity: CallerIdentity, config: AgentsForAmazonBedrockConfig, template_path: str):
     """
     Command : delete
 
@@ -399,12 +413,8 @@ def delete(
 
     try:
         # Delete OpenAPI Schema File
-        s3.delete_object(
-            Bucket=identity.bucket_name, Key=identity.AgentConfig.schema_file
-        )
-        print(
-            f"- Deleted OpenAPI schema file to {identity.bucket_name}/{identity.AgentConfig.schema_file}"
-        )
+        s3.delete_object(Bucket=identity.bucket_name, Key=identity.AgentConfig.schema_file)
+        print(f"- Deleted OpenAPI schema file to {identity.bucket_name}/{identity.AgentConfig.schema_file}")
     except Exception:
         print("- Delete Failed : OpenAPI schema file")
 
@@ -428,9 +438,7 @@ def delete(
             print("- Delete Failed : Agent Action Group")
 
         # Delete Agent
-        bedrock_agent.delete_agent(
-            agentId=agent_info.agent_id, skipResourceInUseCheck=True
-        )
+        bedrock_agent.delete_agent(agentId=agent_info.agent_id, skipResourceInUseCheck=True)
         print(f"- Deleted agents for amazon bedrock : {agent_info.agent_id}")
     except Exception:
         print("- Delete Failed : Agent")

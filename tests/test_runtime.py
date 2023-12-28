@@ -1,4 +1,5 @@
 from chalice_spec.docs import Docs
+from chalice_a4ab.runtime.models.parser_lambda import PromptType
 from chalice_a4ab.runtime.parser_lambda.exceptions import ParserLambdaAbortException
 from tests.schema import TestSchema, AnotherSchema
 from .test_utility import (
@@ -286,11 +287,11 @@ def test_invoke_from_multi_expects():
     """
     app, spec = setup_test()
 
-    @app.parser_lambda_pre_processing()
+    @app.parser_lambda_pre_processing(spec)
     def pre_process(event, response):
         return response
 
-    @app.parser_lambda_orchestration()
+    @app.parser_lambda_orchestration(spec)
     def get_post(event, response):
         return response
 
@@ -307,6 +308,8 @@ def test_invoke_from_multi_expects():
         response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["actionGroupName"] == "Main"
     )
     assert response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["apiName"] == "/hello"
+    assert PromptType.ORCHESTRATION in spec._enabled_prompt_type_list
+    assert PromptType.PRE_PROCESSING in spec._enabled_prompt_type_list
 
 
 def test_invoke_from_orchestration_direct_response():

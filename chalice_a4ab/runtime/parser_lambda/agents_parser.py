@@ -1,4 +1,5 @@
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Optional
+from chalice_a4ab.agents_for_amazon_bedrock_config import AgentsForAmazonBedrockConfig
 from chalice_a4ab.runtime.models.parser_lambda import (
     ParserLambdaInputModel,
     PromptType,
@@ -10,9 +11,20 @@ class ParserFunctionEventHandler:
     _handler: Callable[..., Any]
     _prompt_type: PromptType
 
-    def __init__(self, prompt_type: PromptType, handler: Callable[..., Any]):
+    def __init__(
+        self, prompt_type: PromptType, handler: Callable[..., Any], config: Optional[AgentsForAmazonBedrockConfig]
+    ):
         self._prompt_type = prompt_type
         self._handler = handler
+
+        # Update Config :: Append Enabled Prompt Type
+        target_config = config
+        if config is None:
+            # Get from Global
+            target_config = AgentsForAmazonBedrockConfig.get_global_config()
+        # Add Prompt Type List
+        if (target_config is not None) and not (prompt_type in target_config._enabled_prompt_type_list):
+            target_config._enabled_prompt_type_list.append(prompt_type)
 
     def __call__(self, event: dict, context: dict):
         return self._handler(event, context)
@@ -33,16 +45,16 @@ class ParserFunctionEventHandler:
 class AgentsParserFunction:
     _parser_function_handlers: List[ParserFunctionEventHandler] = []
 
-    def parser_lambda_pre_processing(self):
+    def parser_lambda_pre_processing(self, config: Optional[AgentsForAmazonBedrockConfig] = None):
         def register_handler(event_function: Callable[..., Any]):
-            wrapper = ParserFunctionEventHandler(PromptType.PRE_PROCESSING, event_function)
+            wrapper = ParserFunctionEventHandler(PromptType.PRE_PROCESSING, event_function, config)
             self._parser_function_handlers.append(wrapper)
 
         return register_handler
 
-    def parser_lambda_orchestration(self):
+    def parser_lambda_orchestration(self, config: Optional[AgentsForAmazonBedrockConfig] = None):
         def register_handler(event_function: Callable[..., Any]):
-            wrapper = ParserFunctionEventHandler(PromptType.ORCHESTRATION, event_function)
+            wrapper = ParserFunctionEventHandler(PromptType.ORCHESTRATION, event_function, config)
             self._parser_function_handlers.append(wrapper)
 
         return register_handler
