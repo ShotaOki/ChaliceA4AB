@@ -9,7 +9,7 @@ keywords = ["Chalice", "AWS", "Agents for Amazon Bedrock", "Bedrock"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 apispec = "^6.0.2"
 chalice-spec = "^0.7.0"
 
@@ -21,6 +21,7 @@ pytest-cov = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1"
+boto3 = "^1.34.9"
 
 [tool.poetry.scripts]
 chalice-a4ab = "chalice_a4ab.cli:main"

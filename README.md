@@ -1,5 +1,10 @@
 # Chalice-A4AB
 
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/Chalice-A4AB)
+
+[![tests](https://github.com/ShotaOki/ChaliceA4AB/actions/workflows/test.yml/badge.svg)](https://github.com/ShotaOki/ChaliceA4AB/actions/workflows/test.yml)
+![GitHub License](https://img.shields.io/github/license/ShotaOki/ChaliceA4AB)
+
 ## What is this?
 
 Chalice plugin: Support `Agents for Amazon Bedrock`
