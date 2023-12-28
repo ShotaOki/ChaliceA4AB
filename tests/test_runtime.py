@@ -270,7 +270,8 @@ def test_invoke_from_pre_processing_not_valid():
         ),
         {},
     )
-    assert response["preProcessingParsedResponse"]["isValidInput"] == False
+    assert "preProcessingParsedResponse" in response
+    assert not response["preProcessingParsedResponse"]["isValidInput"]
 
 
 def test_invoke_from_pre_processing_valid():
@@ -295,7 +296,117 @@ def test_invoke_from_pre_processing_valid():
         ),
         {},
     )
-    assert response["preProcessingParsedResponse"]["isValidInput"] == True
+    assert "preProcessingParsedResponse" in response
+    assert response["preProcessingParsedResponse"]["isValidInput"]
+
+
+def test_invoke_from_orchestration_knowledge_base():
+    """
+    Normaly :: Invoke from Orchestration (Knowledge base)
+
+    Condition:
+        Invoke from Amazon Bedrock Agent
+    Expects:
+        Return response for Parser Lambda Function
+    """
+    app, spec = setup_test()
+
+    @app.parser_lambda_orchestration()
+    def get_post(event, response):
+        return response
+
+    response = app(
+        parser_lambda_input(
+            "ORCHESTRATION",
+            'To answer this question, I will:\\n\\n1. Call the GET::x_amz_knowledgebase_KBID123456::Search function to search for a phone number to call.\\n\\nI have checked that I have access to the GET::x_amz_knowledgebase_KBID23456::Search function.\\n\\n</scratchpad>\\n\\n<function_call>GET::x_amz_knowledgebase_KBID123456::Search(searchQuery="What is the phone number I can call?")',
+        ),
+        {},
+    )
+    assert "orchestrationParsedResponse" in response
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"]["invocationType"]
+        == "KNOWLEDGE_BASE"
+    )
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"][
+            "agentKnowledgeBase"
+        ]["knowledgeBaseId"]
+        == "KBID123456"
+    )
+
+
+def test_invoke_from_orchestration_action_group_has_variable():
+    """
+    Normaly :: Invoke from Orchestration (action group, has variable)
+
+    Condition:
+        Invoke from Amazon Bedrock Agent
+    Expects:
+        Return response for Parser Lambda Function
+    """
+    app, spec = setup_test()
+
+    @app.parser_lambda_orchestration()
+    def get_post(event, response):
+        return response
+
+    response = app(
+        parser_lambda_input(
+            "ORCHESTRATION",
+            '<functions> XML tags before.\n\n\nThe user input is <question>question message</question>\n\n\nAssistant: <scratchpad> I understand I cannot use functions that have not been provided to me to answer this question.\n\n<scratchpad>\nTo properly respond to the user\'s statement that they have lived for over 500 years as a great demon, I will:\n\n1. Call the POST::Main::/talk function, passing in the age parameter as 1000 (double the stated 500 years). \n\nI have double checked that I have access to the POST::Main::/talk function.\n</scratchpad>\n<function_call>post::Main::/talk(age="1000")',
+        ),
+        {},
+    )
+    assert "orchestrationParsedResponse" in response
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"]["invocationType"]
+        == "ACTION_GROUP"
+    )
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"][
+            "actionGroupInvocation"
+        ]["actionGroup"]
+        == "Main"
+    )
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"][
+            "actionGroupInvocation"
+        ]["apiName"]
+        == "/talk"
+    )
+    assert (
+        response["orchestrationParsedResponse"]["responseDetails"][
+            "actionGroupInvocation"
+        ]["verb"]
+        == "post"
+    )
+    print(response)
+
+
+def test_invoke_from_orchestration_action_group_no_variable():
+    """
+    Normaly :: Invoke from Orchestration (action group, no variable)
+
+    Condition:
+        Invoke from Amazon Bedrock Agent
+    Expects:
+        Return response for Parser Lambda Function
+    """
+    app, spec = setup_test()
+
+    @app.parser_lambda_orchestration()
+    def get_post(event, response):
+        return response
+
+    response = app(
+        parser_lambda_input(
+            "ORCHESTRATION",
+            '<functions> XML tags before.\n\n\nThe user input is <question>Hello</question>\n\n\nAssistant: <scratchpad> I understand I cannot use functions that have not been provided to me to answer this question.\n\nTo properly greet the user, I will call the POST::Main::/hello function, which returns a greeting in response to "こんにちは".\n\nI have double checked that I have access to the POST::Main::/hello function.\n</scratchpad>\n<function_call>post::Main::/hello()',
+        ),
+        {},
+    )
+    assert "orchestrationParsedResponse" in response
+    print(response)
 
 
 def test_converter_base_class():
