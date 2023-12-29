@@ -7,7 +7,13 @@ from .chalice_plugin import (  # noqa: F401
     agents_for_amazon_bedrock,
 )
 from .agents_for_amazon_bedrock_config import AgentsForAmazonBedrockConfig  # noqa: F401
-
+from chalice_a4ab.runtime.models.parser_lambda import (  # noqa: F401
+    ParserLambdaInputModel,
+    ParserLambdaResponseModel,
+    PreProcessingResponseModel,
+    OrchestrationResponseModel,
+    PromptType,
+)
 
 try:
     from chalice_spec import ChaliceWithSpec, PydanticPlugin

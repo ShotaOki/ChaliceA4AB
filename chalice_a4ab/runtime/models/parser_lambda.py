@@ -74,7 +74,9 @@ class ParserLambdaResponseModel(BaseModel):
     pre_processing_parsed_response: Optional[PreProcessingResponseModel] = Field(
         None, alias="preProcessingParsedResponse"
     )
-    orchestration_parsed_response: Optional[dict] = Field(None, alias="orchestrationParsedResponse")
+    orchestration_parsed_response: Optional[OrchestrationResponseModel] = Field(
+        None, alias="orchestrationParsedResponse"
+    )
 
     class Config:
         use_enum_values = True
