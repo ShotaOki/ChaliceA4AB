@@ -3,24 +3,13 @@ import os
 
 from chalice_a4ab import AgentsForAmazonBedrockConfig
 
-from .management import init, sync, delete, show, read_identity
+from .management import init, sync, delete, show, read_identity, info
+from .arg_input import read_args
+from .run_agent import read_run_agent_parameter, invoke
 from pathlib import Path
 from importlib import import_module
-import argparse
 
 sys.path.append(str(Path(os.getcwd())))
-
-input_parser = argparse.ArgumentParser(description="Chalice A4AB CLI")
-input_parser.add_argument("command", type=str, help="command", default="help")
-input_parser.add_argument("--bucket", type=str, help="bucket name", default="")
-input_parser.add_argument("--region", type=str, help="region name", default="us-east-1")
-input_parser.add_argument("--profile", type=str, help="profile name", default="default")
-input_parser.add_argument(
-    "--appname",
-    type=str,
-    help="chalice main file name (default = app.py)",
-    default="app",
-)
 
 
 def main():
@@ -28,8 +17,13 @@ def main():
     Main Function
     """
     try:
+        # Parse Run Agent Parameter
+        invoke_args = read_run_agent_parameter(sys.argv[1:])
+        if invoke_args is not None:
+            print(invoke(invoke_args.to_boto3_parameter(), invoke_args))
+            return
         # Parse Input Parameter
-        args = input_parser.parse_args(sys.argv[1:])
+        args = read_args(sys.argv[1:])
         # Parse from chalice/app.py
         app_module = import_module("app", package=args.appname)
         # Get Config from chalice/app.py
@@ -37,7 +31,7 @@ def main():
         # Get Template File
         template_file = str(Path(__file__).parent / "template.yaml")
         # Get Identity (Boto3 Config)
-        identity = read_identity(config, args.region, args.profile, args.bucket)
+        identity = read_identity(config, args.to_boto3_parameter(), args.bucket)
         # Required Parameter Check
         if (config.instructions is None) or len(config.instructions) == 0:
             print("Please set instructions in config")
@@ -57,6 +51,8 @@ def main():
             delete(identity, config, template_file)
         elif args.command == "show":
             show(config)
+        elif args.command == "info":
+            info(identity)
         else:
             print("Usage: ")
             print("    chalice-a4ab ${command}")
@@ -65,6 +61,7 @@ def main():
             print("    sync: Sync AWS Resources with current app.py source")
             print("    delete: Delete AWS Resources")
             print("    show: Show OpenAPI document")
+            print("    info: Show information about AWS resources")
     except Exception as e:
         print("Failed to execute")
         print(e)

@@ -3,6 +3,8 @@ import boto3
 from pydantic import BaseModel, Field
 from hashlib import md5
 import io
+
+import yaml
 from chalice_a4ab.cli.agent_model import AgentModelEditable, AgentModelReadonly
 from chalice_a4ab.runtime.models.parser_lambda import PromptType
 from chalice_a4ab.runtime.pydantic_tool.utility import PydanticUtility as u
@@ -14,13 +16,14 @@ class CallerIdentity(BaseModel):
     Account: str
     Arn: str
     Region: str
+    SessionParameter: dict
     AgentConfig: AgentsForAmazonBedrockConfig
     DefaultBucketName: str = Field("")
     Stage: str = Field("dev")
 
     @property
     def session(self):
-        return boto3.Session(region_name=self.Region)
+        return boto3.Session(**self.SessionParameter)
 
     @property
     def bucket_name(self):
@@ -54,19 +57,25 @@ class CallerIdentity(BaseModel):
 
 def read_identity(
     agent_config: AgentsForAmazonBedrockConfig,
-    region: str = "us-east-1",
-    profile: str = "default",
+    session_parameter: dict,
     bucket_name: str = "",
 ):
     """
     Read Account Identity from STS
     """
     # Create Session on Current Region
-    session = boto3.Session(region_name=region, profile_name=profile)
+    session = boto3.Session(**session_parameter)
     # Get Account Into
     identity = session.client("sts").get_caller_identity()
+    # Get Region
+    region = session._session.get_config_variable("region")
+    if region is None:
+        # Failed to get :: set default region
+        region = "us-east-1"
     # Set Region
     identity["Region"] = region
+    # Set Session Parameter
+    identity["SessionParameter"] = session_parameter
     # Set Identity Config
     identity["AgentConfig"] = agent_config
     # Set Bucket Name
@@ -465,3 +474,51 @@ def show(config: AgentsForAmazonBedrockConfig):
     Show OpenAPI Document
     """
     print(config.agents_for_bedrock_schema_json())
+
+
+def info(identity: CallerIdentity, quiet: bool = False):
+    """
+    Get Current Agent Info
+    """
+    # Create Agent for Amazon Bedrock Client
+    bedrock_agent = identity.session.client("bedrock-agent")
+
+    # Get Current Agent Setting
+    agent_info = read_current_agent_info(identity, bedrock_agent)
+    try:
+        response = bedrock_agent.list_agent_aliases(
+            agentId=agent_info.agent_id,
+            maxResults=5,
+        )
+        alias_map = {alias["agentAliasName"]: alias["agentAliasId"] for alias in response["agentAliasSummaries"]}
+    except Exception:
+        alias_map = {}
+    if not quiet:
+        print(
+            yaml.dump(
+                [
+                    {
+                        "AGENT": {
+                            "ID": agent_info.agent_id,
+                            "STATUS": agent_info.agent_status,
+                        },
+                    },
+                    {
+                        "AGENT ALIAS": alias_map,
+                    },
+                    {
+                        "ACTION GROUP": {
+                            "ID": agent_info.action_group_id,
+                        },
+                    },
+                    {
+                        "S3 BUCKET": {
+                            "BUCKET NAME": identity.bucket_name,
+                            "SCHEMA FILE NAME": identity.AgentConfig.schema_file,
+                        },
+                    },
+                ]
+            )
+        )
+
+    return agent_info.agent_id
