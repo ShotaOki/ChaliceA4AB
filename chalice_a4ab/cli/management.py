@@ -330,7 +330,7 @@ def init(identity: CallerIdentity, config: AgentsForAmazonBedrockConfig, templat
         FunctionName=identity.lambda_function_name,
         Principal="bedrock.amazonaws.com",
         SourceArn=identity.agent_id_to_arn(agent_id),
-        StatementId="amazon-bedrock-agent",
+        StatementId=f"amazon-bedrock-agent-{agent_id}",
     )
     print(f"- Added permission to lambda function : {identity.lambda_function_name}")
 
