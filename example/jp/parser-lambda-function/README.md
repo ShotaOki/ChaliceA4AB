@@ -2,7 +2,7 @@
 
 ## このサンプルの目的
 
-- ParserLambda のそれぞれの割り込み関数の実装例を提示します
+- Parser Lambda のそれぞれの割り込み関数の実装例を提示します
 
 ## 前提条件
 
@@ -20,13 +20,13 @@
 2. Chalice のデプロイコマンドを実行します
 
    ```bash
-   chalice deploy --profile bedrock
+   chalice deploy --profile ${あなたのプロファイル名}
    ```
 
 3. ChaliceA4AB のデプロイコマンドを実行します
 
    ```bash
-   chalice init --profile bedrock --region us-east-1
+   chalice-a4ab init --profile ${あなたのプロファイル名} --region us-east-1
    ```
 
 ## 修正後の更新
@@ -34,25 +34,25 @@
 1. Chalice を更新します
 
    ```bash
-   chalice deploy --profile bedrock
+   chalice deploy --profile ${あなたのプロファイル名}
    ```
 
 2. ChaliceA4AB の更新コマンドを実行します
 
    ```bash
-   chalice sync --profile bedrock --region us-east-1
+   chalice-a4ab sync --profile ${あなたのプロファイル名} --region us-east-1
    ```
 
 ## プロジェクトの削除
 
-1. Chalice を更新します
+1. ChaliceA4AB の削除コマンドを実行します
 
    ```bash
-   chalice delete --profile bedrock
+   chalice-a4ab delete --profile ${あなたのプロファイル名} --region us-east-1
    ```
 
-2. ChaliceA4AB の更新コマンドを実行します
+2. Chalice を削除します
 
    ```bash
-   chalice delete --profile bedrock --region us-east-1
+   chalice delete --profile ${あなたのプロファイル名}
    ```

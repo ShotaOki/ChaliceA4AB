@@ -20,13 +20,13 @@
 2. Chalice のデプロイコマンドを実行します
 
    ```bash
-   chalice deploy --profile bedrock
+   chalice deploy --profile ${あなたのプロファイル名}
    ```
 
 3. ChaliceA4AB のデプロイコマンドを実行します
 
    ```bash
-   chalice init --profile bedrock --region us-east-1
+   chalice-a4ab init --profile ${あなたのプロファイル名} --region us-east-1
    ```
 
 ## アプリの実行
@@ -38,7 +38,7 @@ AGENT_ID は以下のコマンドで調べることができます
 1. 事前準備
 
    ```bash
-   chalice-a4ab info --profile bedrock --region us-east-1
+   chalice-a4ab info --profile ${あなたのプロファイル名} --region us-east-1
    ```
 
 2. コマンドの実行
@@ -60,25 +60,25 @@ AGENT_ID は以下のコマンドで調べることができます
 1. Chalice を更新します
 
    ```bash
-   chalice deploy --profile bedrock
+   chalice deploy --profile ${あなたのプロファイル名}
    ```
 
 2. ChaliceA4AB の更新コマンドを実行します
 
    ```bash
-   chalice sync --profile bedrock --region us-east-1
+   chalice-a4ab sync --profile ${あなたのプロファイル名} --region us-east-1
    ```
 
 ## プロジェクトの削除
 
-1. Chalice を更新します
+1. ChaliceA4AB の削除コマンドを実行します
 
    ```bash
-   chalice delete --profile bedrock
+   chalice-a4ab delete --profile ${あなたのプロファイル名} --region us-east-1
    ```
 
-2. ChaliceA4AB の更新コマンドを実行します
+2. Chalice を削除します
 
    ```bash
-   chalice delete --profile bedrock --region us-east-1
+   chalice delete --profile ${あなたのプロファイル名}
    ```
