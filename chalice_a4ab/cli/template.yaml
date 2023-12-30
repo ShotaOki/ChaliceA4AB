@@ -37,6 +37,7 @@ Resources:
                 Resource:
                   - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-v1
                   - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-v2
+                  - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-v2:1
                   - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-instant-v1
               - Effect: Allow
                 Action:
