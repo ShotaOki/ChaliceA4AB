@@ -3,6 +3,8 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/Chalice-A4AB)
 
 [![tests](https://github.com/ShotaOki/ChaliceA4AB/actions/workflows/test.yml/badge.svg)](https://github.com/ShotaOki/ChaliceA4AB/actions/workflows/test.yml)
+![PyPI - Version](https://img.shields.io/pypi/v/chalice-a4ab)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/chalice-a4ab)
 ![GitHub License](https://img.shields.io/github/license/ShotaOki/ChaliceA4AB)
 
 ## What is this?
@@ -18,98 +20,176 @@ https://pypi.org/project/chalice-a4ab/
 
 1. Install
 
-```
-pip install chalice-a4ab
-```
+   ```
+   pip install -U chalice chalice-a4ab pydantic
+   ```
 
-2. Replace `from chalice import Chalice` to `from chalice_a4ab import Chalice`.
+1. Replace `from chalice import Chalice` to `from chalice_a4ab import Chalice`.
 
-Before:
+   Before:
 
-```python
-from chalice import Chalice
+   ```python
+   from chalice import Chalice
 
-app = Chalice("app-name")
+   app = Chalice("app-name")
 
-@app.router("path-name")
-...
-```
+   @app.router("path-name")
+   ...
+   ```
 
-After:
+   After:
 
-```python
-from chalice_a4ab import Chalice
+   ```python
+   from chalice_a4ab import Chalice
 
-app = Chalice("app-name")
+   app = Chalice("app-name")
 
-@app.router("path-name")
-...
-```
+   @app.router("path-name")
+   ...
+   ```
 
-3. Application work on Agents for Amazon Bedrock
+1. **(Optional)** Add Parser Lambda Function
+
+   Add these decorator, function becomes "parser lambda"
+
+   ```python
+   from chalice_a4ab import (
+       Chalice,
+       AgentsForAmazonBedrockConfig,
+       ParserLambdaAbortException,
+       ParserLambdaResponseModel,
+   )
+
+   # Set Config for Agents for Amazon bedrock
+   AgentsForAmazonBedrockConfig().apply()
+
+   ...
+
+   # PRE_PROCESSING
+   @app.parser_lambda_pre_processing()
+   def pre_processing(event, default_result: ParserLambdaResponseModel) -> ParserLambdaResponseModel:
+       # [MEMO] is_valid_input :: Allow/Deny API invocation
+       # default_result.pre_processing_parsed_response.is_valid_input = True
+       return default_result
+
+
+   # ORCHESTRATION
+   @app.parser_lambda_orchestration()
+   def orchestration(event: dict, default_result: ParserLambdaResponseModel) -> ParserLambdaResponseModel:
+       # [MEMO] Throw this Exception, Overwrite LLM response
+       # raise ParserLambdaAbortException(message="Overwrited")
+       return default_result
+   ```
+
+1. Application works ::
+
+   | What you can do                        | Status |
+   | -------------------------------------- | ------ |
+   | Execute from Agents for Amazon Bedrock | 〇     |
+   | Auto generate OpenAPI schema           | ×      |
+   | Management on cli                      | ×      |
 
 ## Advanced Usage
 
 Create OpenAPI Schema automatically.
 
-1. Install Chalice-spec
+1. Install Chalice-a4ab and Chalice-spec
 
-```python
-pip install chalice chalice-spec==0.7.0 chalice-a4ab boto3 pydantic
-```
+   ```python
+   pip install -U chalice chalice-spec==0.7.0 chalice-a4ab boto3 pydantic
+   ```
 
-2. Write Setting
+1. Add Setting
 
-```python
-from chalice_a4ab import Chalice, AgentsForAmazonBedrockConfig
+   ```python
+   from chalice_a4ab import Chalice, AgentsForAmazonBedrockConfig
+   from chalice_spec.docs import Docs, Operation
 
-# Set Config for Agents for Amazon bedrock
-AgentsForAmazonBedrockConfig(
-    instructions="Situation Settings for talking with Human and agent.(more than 40 words)",
-    description="Description of application",
-).apply()
+   # Set Config for Agents for Amazon bedrock
+   AgentsForAmazonBedrockConfig(
+       instructions="Situation Settings for talking with Human and agent.(more than 40 words)",
+       description="Description of application",
+   ).apply()
 
-app = Chalice(app_name="app-name")
+   app = Chalice(app_name="app-name")
 
-@app.router("path-name")
-...
-```
+   @app.router("path-name",
+       methods=["POST"],
+       docs=Docs(
+           post=Operation(
+               request=PyDanticRequestModelClass,
+               response=PyDanticOutputModelClass,
+           )
+       ))
+   def post_method():
+   ...
+   ```
 
-documentation for `@app.router` sample: https://github.com/TestBoxLab/chalice-spec
+   documentation for `@app.router` sample: https://github.com/TestBoxLab/chalice-spec
 
-3. Upload by bash
+1. Management CLI
 
-Create AWS Resource for Cloudformation
+   **Init command** :: Create AWS Resource and OpenAPI Schema.
 
-```python
-chalice-a4ab init --profile ${PROFILE_NAME} --region ${REGION_NAME}
-```
+   ```bash
+   chalice-a4ab init --profile ${PROFILE_NAME} --region ${REGION_NAME}
+   ```
 
-Or Update Already Exists AWS Resource
+   **Sync command** :: Update Already AWS Resource and OpenAPISchema.
 
-```python
-chalice-a4ab sync --profile ${PROFILE_NAME} --region ${REGION_NAME}
-```
+   ```bash
+   chalice-a4ab sync --profile ${PROFILE_NAME} --region ${REGION_NAME}
+   ```
 
-Delete AWS Resource
+   **Show command** :: Show OpenAPI Schema.
 
-```python
-chalice-a4ab delete
-```
+   ```bash
+   chalice-a4ab show --profile ${PROFILE_NAME} --region ${REGION_NAME}
+   ```
+
+   **Info command** :: Show about Agents for Amazon Bedrock.
+
+   ```bash
+   chalice-a4ab info --profile ${PROFILE_NAME} --region ${REGION_NAME}
+   ```
+
+   **Invoke command** :: Invoke Agents for Amazon Bedrock.
+
+   ```bash
+   chalice-a4ab invoke "Natural Language Query" \
+   --agent-id ${AGENT_ID} \
+   --agent-alias-id ${AGENT_ALIAS_ID} \
+   --end-session \
+   --profile ${PROFILE_NAME} --region ${REGION_NAME}
+   ```
+
+   **Delete AWS Resource**
+
+   ```bash
+   chalice-a4ab delete --profile ${PROFILE_NAME} --region ${REGION_NAME}
+   ```
+
+1. Application works ::
+
+   | What you can do                        | Status |
+   | -------------------------------------- | ------ |
+   | Execute from Agents for Amazon Bedrock | 〇     |
+   | Auto generate OpenAPI schema           | 〇     |
+   | Management on cli                      | 〇     |
 
 # Develop
 
-Setup
+1. Setup
 
-```bash
-poetry install
-```
+   ```bash
+   poetry install
+   ```
 
-Run test
+1. Run test
 
-```bash
-poetry run pytest
-```
+   ```bash
+   poetry run pytest
+   ```
 
 # Lisence
 
