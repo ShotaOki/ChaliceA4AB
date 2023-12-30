@@ -11,10 +11,13 @@
 
 Chalice plugin: Support `Agents for Amazon Bedrock`
 
-## PIP
+## URL Links
 
-**Chalice-a4ab**  
+**PYPI :: Chalice-a4ab**  
 https://pypi.org/project/chalice-a4ab/
+
+**Github :: Chalice-a4ab**  
+https://github.com/ShotaOki/ChaliceA4AB
 
 ## Usage
 
