@@ -1,0 +1,12 @@
+[
+    {
+        "#comment": "顧客に対して注文をたずねる",
+        "id": "ask-to-order",
+        "path": "ask-to-order"
+    },
+    {
+        "#comment": "顧客に対して数量をたずねる",
+        "id": "ask-to-options",
+        "path": "ask-to-options"
+    }
+]

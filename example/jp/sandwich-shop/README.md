@@ -14,5 +14,9 @@ infrastructureのディレクトリで、Bootstrapを実行します
 
 Bootstrapを実行したあと、デプロイをします
 
-  $ cdk deploy --all
+  $ cdk deploy --all && python3 deploy-hook.py deploy
+
+プロジェクトを削除するときは、以下のコマンドを実行します
+
+  $ python3 deploy-hook.py delete && cdk delete --all
 
