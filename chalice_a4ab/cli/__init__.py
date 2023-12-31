@@ -31,7 +31,7 @@ def main():
         # Get Template File
         template_file = str(Path(__file__).parent / "template.yaml")
         # Get Identity (Boto3 Config)
-        identity = read_identity(config, args.to_boto3_parameter(), args.bucket)
+        identity = read_identity(config, args.to_boto3_parameter(), default_bucket_name=args.bucket)
         # Required Parameter Check
         if (config.instructions is None) or len(config.instructions) == 0:
             print("Please set instructions in config")
