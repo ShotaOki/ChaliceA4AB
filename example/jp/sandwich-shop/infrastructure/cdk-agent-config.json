@@ -2,11 +2,32 @@
     {
         "#comment": "顧客に対して注文をたずねる",
         "id": "ask-to-order",
-        "path": "ask-to-order"
+        "path": "ask-to-order",
+        "type": "Agent",
+        "export": {
+            "AgentId": "AgentId",
+            "AgentAliasId": "AgentAliasId.AgentTestAlias"
+        }
     },
     {
         "#comment": "顧客に対して数量をたずねる",
         "id": "ask-to-options",
-        "path": "ask-to-options"
+        "path": "ask-to-options",
+        "type": "Agent",
+        "export": {
+            "AgentId": "AgentId",
+            "AgentAliasId": "AgentAliasId.AgentTestAlias"
+        }
+    },
+    {
+        "#comment": "バックエンド",
+        "id": "a4ab-sandwich-shop-backend",
+        "path": "",
+        "type": "Backend",
+        "export": {
+            "ApplicationClientOutput": "ApplicationClientOutput",
+            "IdentityPoolOutput": "IdentityPoolOutput",
+            "UserPoolIdOutput": "UserPoolIdOutput"
+        }
     }
 ]

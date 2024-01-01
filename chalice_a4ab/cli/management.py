@@ -553,4 +553,7 @@ def info(identity: CallerIdentity, quiet: bool = False):
             )
         )
 
-    return agent_info.agent_id
+    return {
+        "AgentId": agent_info.agent_id,
+        "AgentAliasId": alias_map
+    }

@@ -60,6 +60,15 @@ def read_api_handler_arn_from_output(
     return [output["OutputValue"] for output in stack.outputs if output["OutputKey"] == lambda_arn_output_key][0]
 
 
+def read_from_output(identity: CallerIdentity, stack_id: str):
+    """
+    Read output from stack
+    """
+    cfn = identity.session.resource("cloudformation")
+    stack = cfn.Stack(stack_id)
+    return {output["OutputKey"]: output["OutputValue"] for output in stack.outputs}
+
+
 def is_exist_stack(identity: CallerIdentity, stack_name: str):
     """
     Check is exist stack
@@ -79,7 +88,7 @@ def execute_process_from_cdk_hook(
     cfn_template: str,
     method_on_exist_stack,
     method_on_no_exist_stack,
-):
+) -> CallerIdentity:
     """
     Execute process from cdk
     """
@@ -96,3 +105,5 @@ def execute_process_from_cdk_hook(
         if method_on_exist_stack is None:
             # Sync project
             method_on_exist_stack(identity, agent_config, cfn_template)
+    # Return Caller Identity
+    return identity
