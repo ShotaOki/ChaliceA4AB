@@ -67,12 +67,14 @@ def process(method_on_exist_stack=None, method_on_no_exist_stack=None, update_ex
             if update_export_config:
                 output = read_from_output(default_identity, stack_id)
                 for export_stack_key, output_key in stack["export"].items():
-                    export_key: str = f"VITE_{stack_id}_{export_stack_key}"
+                    export_key: str = f"VITE_APP_{stack_id}_{export_stack_key}"
                     export_key = export_key.upper().replace("-", "_")
                     export_config[export_key] = read_nested_config(output, output_key)
 
     if update_export_config:
-        print(export_config)
+        with open(str(Path(__file__).parent.parent / "frontend" / ".env"), "w") as fp:
+            for k, v in export_config.items():
+                fp.write(f'{k}="{v}"' + "\n")
 
 
 if args.command == "deploy":
