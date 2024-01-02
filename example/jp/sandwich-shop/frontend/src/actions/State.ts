@@ -1,21 +1,40 @@
 import { create } from "zustand";
-import { StateSchemaType } from "../actionTypes/StateModelTypes";
+import {
+  OrderSchemaType,
+  StateSchemaType,
+} from "../actionTypes/StateModelTypes";
 
 const useStateContent = create<{
   state: StateSchemaType;
   setState: (s: StateSchemaType) => void;
+  appendOrder: (s: OrderSchemaType) => StateSchemaType;
   appendState: (s: StateSchemaType) => StateSchemaType;
 }>((set, get) => {
   return {
     state: {},
-    setState(s: any) {
+    setState(s: StateSchemaType) {
       set(() => {
         return {
           state: s,
         };
       });
     },
-    appendState(s: any) {
+    appendOrder(s: OrderSchemaType) {
+      const current = get().state;
+      const response = current;
+      if (response.order) {
+        response.order.push(s);
+      } else {
+        response.order = [s];
+      }
+      set(() => {
+        return {
+          state: response,
+        };
+      });
+      return response;
+    },
+    appendState(s: StateSchemaType) {
       const current = get().state;
       set(() => {
         return {
@@ -34,11 +53,12 @@ const useStateContent = create<{
 });
 
 const useState = () => {
-  const { state, setState, appendState } = useStateContent();
+  const { state, setState, appendOrder, appendState } = useStateContent();
   return {
     state,
     setState,
     appendState,
+    appendOrder,
   };
 };
 

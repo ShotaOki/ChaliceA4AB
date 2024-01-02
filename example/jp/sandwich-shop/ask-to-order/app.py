@@ -7,6 +7,8 @@ from chalice_a4ab import (
 )
 from chalice_spec.docs import Docs, Operation
 from pydantic import BaseModel
+import json
+from uuid import uuid4
 
 AgentsForAmazonBedrockConfig(
     instructions=(  #
@@ -75,6 +77,26 @@ def orchestration(event: dict, default_result: ParserLambdaResponseModel) -> Par
     """
     APIの実行前に割り込みます
     """
-    # LLMの応答を上書きします
-    # raise ParserLambdaAbortException(message="ありえない…この私が…")
+    if default_result.orchestration_parsed_response:
+        input = default_result.orchestration_parsed_response
+
+        # APIの実行前(実行する関数が決定した段階)で、応答に割り込みます
+        if input.response_details.action_group_invocation is not None:
+            # 実行したAPIのパス名を取得します
+            api_name = input.response_details.action_group_invocation.api_name
+            api_parameter = input.response_details.action_group_invocation.action_group_input
+            # サーバを立てるAPIに割り込みます
+            if api_name == "/accept_order":
+                name = api_parameter.get("name", {}).get("value", "-")
+                counts = api_parameter.get("counts", {}).get("value", "1")
+                # LLMの応答を上書きします
+                raise ParserLambdaAbortException(
+                    message=json.dumps(
+                        {
+                            "action": "json_control.append_order",
+                            "value": {"id": str(uuid4()), "name": name, "count": int(counts)},
+                        }
+                    )
+                )
+
     return default_result

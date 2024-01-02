@@ -1,15 +1,5 @@
 import z from "zod";
-
-type AgentInfo = {
-  id: string;
-  aliasId: string;
-};
-
-type AgentModelParameter = {
-  priority: number;
-  aiMessage: string;
-  agent?: AgentInfo;
-};
+import { AgentInfo, AgentModelParameter } from "../actionTypes/StateModelTypes";
 
 const addAgentModelIssue = (
   ctx: z.RefinementCtx,
@@ -85,6 +75,15 @@ const AgentOrderType = (
       }
     });
 
+const AGENT_ASK_TO_ORDER: AgentInfo = {
+  id: import.meta.env.VITE_ASK_TO_ORDER_AGENTID,
+  aliasId: import.meta.env.VITE_ASK_TO_ORDER_AGENTALIASID,
+};
+const AGENT_ASK_TO_OPTIONS: AgentInfo = {
+  id: import.meta.env.VITE_ASK_TO_OPTIONS_AGENTID,
+  aliasId: import.meta.env.VITE_ASK_TO_OPTIONS_AGENTALIASID,
+};
+
 const OrderSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -105,6 +104,7 @@ const OrderSchema = z.object({
     required: {
       priority: 13,
       aiMessage: "トッピングの希望はございますか",
+      agent: AGENT_ASK_TO_OPTIONS,
     },
   }),
 });
@@ -120,10 +120,12 @@ const StateSchema = z.object({
     required: {
       priority: 1,
       aiMessage: "ご注文をどうぞ",
+      agent: AGENT_ASK_TO_ORDER,
     },
     waiting: {
       priority: 2,
       aiMessage: "ご注文はございませんか？",
+      agent: AGENT_ASK_TO_ORDER,
     },
   }),
   confirmed: AgentBooleanType({

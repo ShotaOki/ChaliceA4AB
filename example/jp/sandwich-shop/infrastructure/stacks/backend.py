@@ -28,6 +28,7 @@ class BackendApp(cdk.Stack):
     def __init__(self, scope, id, **kwargs):
         super().__init__(scope, id, **kwargs)
 
+        # 認証情報のユーザープールを定義する
         self.user_pool = UserPool(
             self,
             "UserPool",
@@ -42,28 +43,28 @@ class BackendApp(cdk.Stack):
             id_token_validity=Duration.days(1),
             auth_flows=AuthFlow(user_password=True, user_srp=True),
         )
-        self.auth_role = Role(
-            self, "AuthRole", assumed_by=FederatedPrincipal(federated="cognito-identity.amazonaws.com")
+        # 権限を管理できるよう設定する
+        self.identity_pool = IdentityPool(
+            self,
+            "IdentityPool",
+            allow_unauthenticated_identities=False,
+            authentication_providers=IdentityPoolAuthenticationProviders(
+                user_pools=[UserPoolAuthenticationProvider(user_pool=self.user_pool, user_pool_client=self.client)]
+            ),
         )
-        self.auth_role.attach_inline_policy(
+        # Agentのアクセスポリシーを追加する
+        self.identity_pool.authenticated_role.attach_inline_policy(
             Policy(
                 self,
                 "AuthPolicy",
                 document=PolicyDocument(
                     statements=[
-                        PolicyStatement(effect=Effect.ALLOW, actions=["bedrock-agent-runtime:*"], resources=["*"])
+                        PolicyStatement(
+                            effect=Effect.ALLOW, actions=["bedrock-agent-runtime:*", "bedrock:*"], resources=["*"]
+                        )
                     ]
                 ),
             )
-        )
-        self.identity_pool = IdentityPool(
-            self,
-            "IdentityPool",
-            allow_unauthenticated_identities=False,
-            authenticated_role=self.auth_role,
-            authentication_providers=IdentityPoolAuthenticationProviders(
-                user_pools=[UserPoolAuthenticationProvider(user_pool=self.user_pool, user_pool_client=self.client)]
-            ),
         )
         Output(self, "UserPoolIdOutput", export_name="CognitoUserPoolId", value=self.user_pool.user_pool_id)
         Output(
