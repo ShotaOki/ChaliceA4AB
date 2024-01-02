@@ -13,13 +13,13 @@ from pydantic import BaseModel
 AgentsForAmazonBedrockConfig(
     instructions=(  #
         "あなたはサンドウィッチショップのスタッフをしています。"  #
-        "パンの種類を聞き取って、それを反映することができます。"  #
+        "パンのドレッシングを聞き取って、それを反映することができます。"  #
         "注文の要求には丁寧に答えるようにしてください。"  #
     )
 ).apply()
 
 # AppNameはプロジェクト名と合わせてください
-app = Chalice(app_name="agent-what-bread-type")
+app = Chalice(app_name="agent-what-dressing")
 
 
 class OrderInput(BaseModel):
@@ -74,46 +74,43 @@ def help():
     )
 
 
-@app.route("/white", **post_method_define(OrderInput, TalkResponse))
-def accept_white():
+@app.route("/bazil", **post_method_define(OrderInput, TalkResponse))
+def accept_bazil():
     """
-    ホワイトのパンを受け取ります
+    バジルソースを受け取ります
 
-    「ホワイト」のパンの注文を受け取ります。ほんのり甘みのある、プレーンなパンです。普通のパンです。
-    カロリーは179キロカロリーです。
+    「バジルソース」のドレッシングの注文を受け取ります。
     """
     return None
 
 
-@app.route("/wheat", **post_method_define(OrderInput, TalkResponse))
-def accept_wheat():
+@app.route("/mayonnaise", **post_method_define(OrderInput, TalkResponse))
+def accept_mayonnaise():
     """
-    ホワイトのパンを受け取ります
+    マヨネーズを受け取ります
 
-    「ウィート」のパンの注文を受け取ります。小麦胚芽入りで、ハチミツの甘味を加えたパンです。健康的なパンです。
+    「マヨネーズ」のドレッシングの注文を受け取ります。小麦胚芽入りで、ハチミツの甘味を加えたパンです。健康的なパンです。
     カロリーは180キロカロリーです。
     """
     return None
 
 
-@app.route("/seasame", **post_method_define(OrderInput, TalkResponse))
-def accept_seasame():
+@app.route("/wasabi", **post_method_define(OrderInput, TalkResponse))
+def accept_wasabi():
     """
-    セサミのパンを受け取ります
+    わさび醤油を受け取ります
 
-    「セサミ」のパンの注文を受け取ります。香ばしいごまをトッピングしたパンです。
-    カロリーは196キロカロリーです。
+    「わさび醤油」のドレッシングの注文を受け取ります。しょうゆとわさびを使った、和風の、辛いドレッシングです。
     """
     return None
 
 
-@app.route("/honey_oats", **post_method_define(OrderInput, TalkResponse))
-def accept_honey_oats():
+@app.route("/oil", **post_method_define(OrderInput, TalkResponse))
+def accept_oil():
     """
-    ハニーオーツのパンを受け取ります
+    オイル、ビネガー、塩コショウのドレッシングを受け取ります
 
-    「ハニーオーツ」のパンの注文を受け取ります。ハチミツ、オーツ、大豆のオーツミックスをトッピングしたパンです。
-    カロリーは190キロカロリーです。
+    「オイル＆ビネガー、塩コショウ」のドレッシングの注文を受け取ります。塩コショウとオリーブオイル、ビネガーを使ったドレッシングです。
     """
     return None
 
@@ -132,13 +129,18 @@ def orchestration(event: dict, default_result: ParserLambdaResponseModel) -> Par
             api_name = input.response_details.action_group_invocation.api_name
             # APIに割り込みます
             if api_name != "/help":
-                bread_map = {"/honey_oats": "ハニーオーツ", "/seasame": "セサミ", "/wheat": "ウィート", "/white": "ホワイト"}
+                bread_map = {
+                    "/bazil": "バジルソース",
+                    "/mayonnaise": "マヨネーズ",
+                    "/wasabi": "わさび醤油ソース",
+                    "/oil": "オイル＆ビネガー 塩コショウ",
+                }
                 # LLMの応答を上書きします
                 raise ParserLambdaAbortException(
                     message=json.dumps(
                         {
                             "action": "json_control.update_order",
-                            "value": {"bread": bread_map.get(api_name, "-")},
+                            "value": {"dressing": bread_map.get(api_name, "-")},
                         }
                     )
                 )

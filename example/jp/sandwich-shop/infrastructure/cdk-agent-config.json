@@ -20,6 +20,16 @@
         }
     },
     {
+        "#comment": "顧客に対してドレッシングをたずねる",
+        "id": "ask-to-dressing",
+        "path": "ask-to-dressing",
+        "type": "Agent",
+        "export": {
+            "AgentId": "AgentId",
+            "AgentAliasId": "AgentAliasId.AgentTestAlias"
+        }
+    },
+    {
         "#comment": "顧客に対してパンの種類をたずねる",
         "id": "ask-to-bread-type",
         "path": "ask-to-bread-type",

@@ -11,7 +11,6 @@ import useChat from "../actions/Chat";
 import useStateModel from "../actions/StateModel";
 import useState from "../actions/State";
 import useAgentsForAmazonBedrock from "../actions/AgentsForAmazonBedrock";
-import { AgentActionType } from "../actionTypes/StateModelTypes";
 
 const ChatArea: React.FC = () => {
   const chat = useChat();

@@ -79,13 +79,13 @@ const AGENT_ASK_TO_ORDER: AgentInfo = {
   id: import.meta.env.VITE_ASK_TO_ORDER_AGENTID,
   aliasId: import.meta.env.VITE_ASK_TO_ORDER_AGENTALIASID,
 };
-const AGENT_ASK_TO_OPTIONS: AgentInfo = {
-  id: import.meta.env.VITE_ASK_TO_OPTIONS_AGENTID,
-  aliasId: import.meta.env.VITE_ASK_TO_OPTIONS_AGENTALIASID,
-};
 const AGENT_ASK_TO_BREAD_TYPE: AgentInfo = {
   id: import.meta.env.VITE_ASK_TO_BREAD_TYPE_AGENTID,
   aliasId: import.meta.env.VITE_ASK_TO_BREAD_TYPE_AGENTALIASID,
+};
+const AGENT_ASK_TO_DRESSING: AgentInfo = {
+  id: import.meta.env.VITE_ASK_TO_DRESSING_AGENTID,
+  aliasId: import.meta.env.VITE_ASK_TO_DRESSING_AGENTALIASID,
 };
 
 const OrderSchema = z.object({
@@ -103,13 +103,7 @@ const OrderSchema = z.object({
     required: {
       priority: 12,
       aiMessage: "ドレッシングの種類を選んでください",
-    },
-  }),
-  topping: AgentOptionType({
-    required: {
-      priority: 13,
-      aiMessage: "トッピングの希望はございますか",
-      agent: AGENT_ASK_TO_OPTIONS,
+      agent: AGENT_ASK_TO_DRESSING,
     },
   }),
 });
