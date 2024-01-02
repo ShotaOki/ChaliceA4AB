@@ -98,11 +98,11 @@ def execute_process_from_cdk_hook(
     identity.DefaultLambdaArn = read_api_handler_arn_from_output(identity, agent_id)
     # Deploy Resource
     if not is_exist_stack(identity, identity.stack_name):
-        if method_on_no_exist_stack is None:
+        if method_on_no_exist_stack is not None:
             # Init project
             method_on_no_exist_stack(identity, agent_config, cfn_template)
     else:
-        if method_on_exist_stack is None:
+        if method_on_exist_stack is not None:
             # Sync project
             method_on_exist_stack(identity, agent_config, cfn_template)
     # Return Caller Identity

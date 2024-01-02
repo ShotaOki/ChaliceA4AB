@@ -22,11 +22,15 @@ Policy = cdk.aws_iam.Policy
 Effect = cdk.aws_iam.Effect
 FederatedPrincipal = cdk.aws_iam.FederatedPrincipal
 Output = cdk.CfnOutput
+Stack = cdk.Stack
 
 
 class BackendApp(cdk.Stack):
     def __init__(self, scope, id, **kwargs):
         super().__init__(scope, id, **kwargs)
+
+        # スタック情報を参照する
+        stack = Stack.of(self)
 
         # 認証情報のユーザープールを定義する
         self.user_pool = UserPool(
@@ -66,6 +70,7 @@ class BackendApp(cdk.Stack):
                 ),
             )
         )
+        Output(self, "RegionOutput", export_name="Region", value=stack.region)
         Output(self, "UserPoolIdOutput", export_name="CognitoUserPoolId", value=self.user_pool.user_pool_id)
         Output(
             self,

@@ -52,22 +52,31 @@ const ChatArea: React.FC = () => {
               if (nextAgent?.agent) {
                 agent.send(textContent, nextAgent.agent).then((response) => {
                   let current = undefined;
-                  if (
-                    response.action == AgentActionType.APPEND_ORDER &&
-                    response.appendOrderValue
-                  ) {
-                    // 注文に追記位する
-                    current = state.appendOrder(response.appendOrderValue);
-                  } else if (
-                    response.action == AgentActionType.UPDATE_JSON_PARTIAL
-                  ) {
-                    // 受信した情報を追記する
+                  // 注文を追加する
+                  if (response.isAppendOrderAction) {
+                    current = state.appendOrder(
+                      response.appendOrderValue as any
+                    );
+                  }
+                  // 注文にオプション情報を追記する
+                  if (response.isUpdateOrderAction) {
+                    current = state.updateOrder(
+                      response.updateOrderValue as any,
+                      nextAgent.path[1] // [order.0.optionName]の形式でパスが入る。
+                    );
+                  }
+                  // 注文以外の情報（店内飲食、人数など）を更新する
+                  if (response.isUpdateJsonPartialAction) {
                     current = state.appendState(response.jsonPartialValue);
-                  } else if (response.action === AgentActionType.EXECUTE_JS) {
+                  }
+                  // JavaScriptを実行する
+                  if (response.isJsCommandAction) {
                     // JavaScriptを実行する
                     chat.received(nextAgent.aiMessage);
                     return;
-                  } else {
+                  }
+                  // メッセージをチャットに表示する
+                  if (response.isMessageAction) {
                     // メッセージを受信する
                     chat.received(response.message);
                     return;

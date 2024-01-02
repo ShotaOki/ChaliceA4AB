@@ -9,13 +9,16 @@ export type AgentModelParameter = {
   agent?: AgentInfo;
 };
 
-export type OrderSchemaType = {
-  id: string;
-  name: string;
-  count: number;
+export type OrderSchemaOptionType = {
   bread?: string;
   dressing?: string;
   topping?: string[];
+};
+
+export type OrderSchemaType = OrderSchemaOptionType & {
+  id: string;
+  name: string;
+  count: number;
 };
 
 export type StateSchemaType = {
@@ -26,6 +29,7 @@ export type StateSchemaType = {
 
 export const AgentActionType = {
   APPEND_ORDER: "json_control.append_order",
+  UPDATE_ORDER: "json_control.update_order",
   UPDATE_JSON_PARTIAL: "json_control.update_partial",
   EXECUTE_JS: "execute.javascript",
   MESSAGE: "message",

@@ -83,6 +83,10 @@ const AGENT_ASK_TO_OPTIONS: AgentInfo = {
   id: import.meta.env.VITE_ASK_TO_OPTIONS_AGENTID,
   aliasId: import.meta.env.VITE_ASK_TO_OPTIONS_AGENTALIASID,
 };
+const AGENT_ASK_TO_BREAD_TYPE: AgentInfo = {
+  id: import.meta.env.VITE_ASK_TO_BREAD_TYPE_AGENTID,
+  aliasId: import.meta.env.VITE_ASK_TO_BREAD_TYPE_AGENTALIASID,
+};
 
 const OrderSchema = z.object({
   id: z.string(),
@@ -92,6 +96,7 @@ const OrderSchema = z.object({
     required: {
       priority: 11,
       aiMessage: "パンの種類を選んでください",
+      agent: AGENT_ASK_TO_BREAD_TYPE,
     },
   }),
   dressing: AgentStringType({

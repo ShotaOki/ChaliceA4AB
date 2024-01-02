@@ -10,8 +10,9 @@ import "./App.css";
 const App: React.FC = () => {
   Amplify.configure({
     Auth: {
-      region: "us-east-1",
-      identityPoolRegion: "us-east-1",
+      region: import.meta.env.VITE_APP_A4AB_SANDWICH_SHOP_BACKEND_REGION,
+      identityPoolRegion: import.meta.env
+        .VITE_APP_A4AB_SANDWICH_SHOP_BACKEND_REGION,
       userPoolId: import.meta.env
         .VITE_APP_A4AB_SANDWICH_SHOP_BACKEND_USERPOOLIDOUTPUT,
       userPoolWebClientId: import.meta.env

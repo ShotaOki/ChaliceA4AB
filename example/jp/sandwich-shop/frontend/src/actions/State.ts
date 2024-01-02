@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import {
+  OrderSchemaOptionType,
   OrderSchemaType,
   StateSchemaType,
 } from "../actionTypes/StateModelTypes";
@@ -8,6 +9,7 @@ const useStateContent = create<{
   state: StateSchemaType;
   setState: (s: StateSchemaType) => void;
   appendOrder: (s: OrderSchemaType) => StateSchemaType;
+  updateOrder: (s: OrderSchemaOptionType, index: number) => StateSchemaType;
   appendState: (s: StateSchemaType) => StateSchemaType;
 }>((set, get) => {
   return {
@@ -26,6 +28,22 @@ const useStateContent = create<{
         response.order.push(s);
       } else {
         response.order = [s];
+      }
+      set(() => {
+        return {
+          state: response,
+        };
+      });
+      return response;
+    },
+    updateOrder(s: OrderSchemaOptionType, index: number) {
+      const current = get().state;
+      const response = current;
+      if (response.order) {
+        response.order[index] = {
+          ...response.order[index],
+          ...s,
+        };
       }
       set(() => {
         return {
@@ -53,12 +71,14 @@ const useStateContent = create<{
 });
 
 const useState = () => {
-  const { state, setState, appendOrder, appendState } = useStateContent();
+  const { state, setState, appendOrder, appendState, updateOrder } =
+    useStateContent();
   return {
     state,
     setState,
     appendState,
     appendOrder,
+    updateOrder,
   };
 };
 

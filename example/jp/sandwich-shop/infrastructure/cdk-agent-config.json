@@ -20,6 +20,16 @@
         }
     },
     {
+        "#comment": "顧客に対してパンの種類をたずねる",
+        "id": "ask-to-bread-type",
+        "path": "ask-to-bread-type",
+        "type": "Agent",
+        "export": {
+            "AgentId": "AgentId",
+            "AgentAliasId": "AgentAliasId.AgentTestAlias"
+        }
+    },
+    {
         "#comment": "バックエンド",
         "id": "a4ab-sandwich-shop-backend",
         "path": "",
@@ -27,7 +37,8 @@
         "export": {
             "ApplicationClientOutput": "ApplicationClientOutput",
             "IdentityPoolOutput": "IdentityPoolOutput",
-            "UserPoolIdOutput": "UserPoolIdOutput"
+            "UserPoolIdOutput": "UserPoolIdOutput",
+            "Region": "RegionOutput"
         }
     }
 ]

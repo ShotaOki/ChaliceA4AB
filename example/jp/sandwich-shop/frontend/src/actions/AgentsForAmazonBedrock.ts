@@ -10,7 +10,7 @@ const useAgentsForAmazonBedrock = () => {
   const getClient = async () => {
     const creds = await Auth.currentUserCredentials();
     return new BedrockAgentRuntimeClient({
-      region: "us-east-1",
+      region: import.meta.env.VITE_APP_A4AB_SANDWICH_SHOP_BACKEND_REGION,
       credentials: creds,
     });
   };
