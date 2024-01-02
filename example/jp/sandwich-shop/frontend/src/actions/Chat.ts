@@ -3,11 +3,15 @@ import { MessageDirection } from "@chatscope/chat-ui-kit-react/src/types/unions"
 import { create } from "zustand";
 
 const useChatState = create<{
+  isConnecting: boolean;
   chat: MessageModel[];
   clear: () => void;
   appendChat: (s: MessageModel) => void;
+  startLoading: () => void;
+  stopLoading: () => void;
 }>((set, get) => {
   return {
+    isConnecting: false,
     chat: [],
     clear() {
       set(() => {
@@ -23,11 +27,26 @@ const useChatState = create<{
         };
       });
     },
+    startLoading() {
+      set(() => {
+        return {
+          isConnecting: true,
+        };
+      });
+    },
+    stopLoading() {
+      set(() => {
+        return {
+          isConnecting: false,
+        };
+      });
+    },
   };
 });
 
 const useChat = () => {
-  const { chat, clear, appendChat } = useChatState();
+  const { chat, isConnecting, clear, appendChat, startLoading, stopLoading } =
+    useChatState();
   const send = (text: string, sender: string, direction: MessageDirection) => {
     appendChat({
       message: text,
@@ -39,6 +58,7 @@ const useChat = () => {
   };
   return {
     chat,
+    isConnecting,
     clear() {
       clear();
     },
@@ -48,6 +68,8 @@ const useChat = () => {
     received(text: string) {
       send(text, "店員", "incoming");
     },
+    startLoading,
+    stopLoading,
   };
 };
 
