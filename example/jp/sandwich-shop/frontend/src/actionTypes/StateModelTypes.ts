@@ -29,6 +29,7 @@ export type OrderSchemaType = OrderSchemaOptionType & {
 
 export type StateSchemaType = {
   eatIn?: boolean;
+  commitOrder?: boolean;
   order?: OrderSchemaType[];
   askFlg?: boolean;
   confirmed?: boolean;

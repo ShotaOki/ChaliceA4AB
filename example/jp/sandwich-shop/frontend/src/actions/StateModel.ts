@@ -102,6 +102,10 @@ const AGENT_ASK_TO_DRESSING: AgentInfo = {
   id: import.meta.env.VITE_ASK_TO_DRESSING_AGENTID,
   aliasId: import.meta.env.VITE_ASK_TO_DRESSING_AGENTALIASID,
 };
+const AGENT_CONFIRM_TO_ORDER: AgentInfo = {
+  id: import.meta.env.VITE_ASK_TO_OPTIONS_AGENTID,
+  aliasId: import.meta.env.VITE_ASK_TO_OPTIONS_AGENTALIASID,
+};
 
 const OrderSchema = z.object({
   id: z.string(),
@@ -142,6 +146,14 @@ const StateSchema = z.object({
           return state.appendState(update);
         },
       },
+    },
+  }),
+  commitOrder: AgentBooleanType({
+    required: {
+      priority: 999999,
+      aiMessage:
+        "ご注文を承りました。料金はxxxx円となります。お間違いがなければ、「はい」とお答えをお願いします。",
+      agent: AGENT_CONFIRM_TO_ORDER,
     },
   }),
   order: AgentOrderType(OrderSchema, {

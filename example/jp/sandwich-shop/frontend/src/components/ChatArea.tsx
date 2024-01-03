@@ -11,8 +11,7 @@ import useChat from "../actions/Chat";
 import useStateModel from "../actions/StateModel";
 import useState from "../actions/State";
 import useAgentsForAmazonBedrock from "../actions/AgentsForAmazonBedrock";
-import { Button, Spinner } from "@cloudscape-design/components";
-import { Flex } from "@aws-amplify/ui-react";
+import { Spinner } from "@cloudscape-design/components";
 import { StateSchemaType } from "../actionTypes/StateModelTypes";
 
 const ChatArea: React.FC = () => {
@@ -105,7 +104,7 @@ const ChatArea: React.FC = () => {
               } else if (nextAgent?.agent) {
                 chat.startLoading();
                 agent
-                  .send(textContent, nextAgent.agent)
+                  .send(textContent, nextAgent.agent, state.state)
                   .then((response) => {
                     let current = undefined;
                     // 注文を追加する

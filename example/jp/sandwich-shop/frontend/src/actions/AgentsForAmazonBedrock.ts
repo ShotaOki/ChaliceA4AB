@@ -28,7 +28,7 @@ const useAgentsForAmazonBedrock = () => {
   };
 
   return {
-    async send(inputText: string, agent: AgentInfo) {
+    async send(inputText: string, agent: AgentInfo, state: any) {
       let result = "";
       const client = await getClient();
       // エージェントにリクエストを送信する
@@ -39,6 +39,11 @@ const useAgentsForAmazonBedrock = () => {
           sessionId: v4(),
           endSession: false,
           inputText: inputText,
+          sessionState: {
+            sessionAttributes: {
+              STATE: JSON.stringify(state),
+            },
+          },
         })
       );
       if (completion) {
