@@ -11,7 +11,9 @@ import useChat from "../actions/Chat";
 import useStateModel from "../actions/StateModel";
 import useState from "../actions/State";
 import useAgentsForAmazonBedrock from "../actions/AgentsForAmazonBedrock";
-import { Spinner } from "@cloudscape-design/components";
+import { Button, Spinner } from "@cloudscape-design/components";
+import { Flex } from "@aws-amplify/ui-react";
+import { StateSchemaType } from "../actionTypes/StateModelTypes";
 
 const ChatArea: React.FC = () => {
   const chat = useChat();
@@ -20,8 +22,9 @@ const ChatArea: React.FC = () => {
   const agent = useAgentsForAmazonBedrock();
 
   useEffect(() => {
-    state.setState({});
-    const proc = stateModel.readNextProc(state.state);
+    const initialState: StateSchemaType = {};
+    state.setState(initialState);
+    const proc = stateModel.readNextProc(initialState);
 
     chat.clear();
     if (proc) {
@@ -61,11 +64,45 @@ const ChatArea: React.FC = () => {
             attachDisabled
             attachButton={false}
             onSend={(textContent) => {
+              // 通知: 完了した
+              const onFinished = () => {
+                chat.received(
+                  "ご注文を承りました。ありがとうございました。お席でおまちください"
+                );
+              };
               // チャットを送信する
               chat.send(textContent);
               // AIエージェントから結果を取得、更新する
               const nextAgent = stateModel.readNextProc(state.state);
-              if (nextAgent?.agent) {
+              if (nextAgent?.dialog) {
+                chat.startLoading();
+                agent
+                  .instant(nextAgent.aiMessage, textContent)
+                  .then((result) => {
+                    let current = undefined;
+                    if (result === true && nextAgent.dialog) {
+                      current = nextAgent.dialog.yes(state);
+                    } else if (result === false && nextAgent.dialog) {
+                      current = nextAgent.dialog.no(state);
+                    } else {
+                      chat.received(
+                        "判断がつきませんでした。もう一度お願いします"
+                      );
+                    }
+                    if (current) {
+                      // AIエージェントから結果を取得、更新する
+                      const proc = stateModel.readNextProc(current);
+                      if (proc) {
+                        chat.received(proc.aiMessage);
+                      } else {
+                        onFinished();
+                      }
+                    }
+                  })
+                  .finally(() => {
+                    chat.stopLoading();
+                  });
+              } else if (nextAgent?.agent) {
                 chat.startLoading();
                 agent
                   .send(textContent, nextAgent.agent)
@@ -105,15 +142,14 @@ const ChatArea: React.FC = () => {
                     if (proc) {
                       chat.received(proc.aiMessage);
                     } else {
-                      console.log("完了");
-                      chat.received(
-                        "承りました。ありがとうございました。おまちください"
-                      );
+                      onFinished();
                     }
                   })
                   .finally(() => {
                     chat.stopLoading();
                   });
+              } else {
+                onFinished();
               }
             }}
           />

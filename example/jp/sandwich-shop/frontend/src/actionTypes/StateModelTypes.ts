@@ -3,10 +3,16 @@ export type AgentInfo = {
   aliasId: string;
 };
 
+export type DialogInfo = {
+  yes: (state: any) => StateSchemaType;
+  no: (state: any) => StateSchemaType;
+};
+
 export type AgentModelParameter = {
   priority: number;
   aiMessage: string;
   agent?: AgentInfo;
+  dialog?: DialogInfo;
 };
 
 export type OrderSchemaOptionType = {
@@ -24,6 +30,7 @@ export type OrderSchemaType = OrderSchemaOptionType & {
 export type StateSchemaType = {
   eatIn?: boolean;
   order?: OrderSchemaType[];
+  askFlg?: boolean;
   confirmed?: boolean;
 };
 

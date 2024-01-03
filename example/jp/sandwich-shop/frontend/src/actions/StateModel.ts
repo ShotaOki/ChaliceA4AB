@@ -1,5 +1,9 @@
 import z from "zod";
-import { AgentInfo, AgentModelParameter } from "../actionTypes/StateModelTypes";
+import {
+  AgentInfo,
+  AgentModelParameter,
+  StateSchemaType,
+} from "../actionTypes/StateModelTypes";
 
 const addAgentModelIssue = (
   ctx: z.RefinementCtx,
@@ -11,6 +15,7 @@ const addAgentModelIssue = (
     aiMessage: parameter.aiMessage,
     priority: parameter.priority,
     agent: parameter.agent ?? {},
+    dialog: parameter.dialog ?? null,
   } as any);
 };
 
@@ -21,6 +26,16 @@ const AgentBooleanType = (parameter: { [key: string]: AgentModelParameter }) =>
     .superRefine((val, ctx) => {
       if (val === undefined) {
         addAgentModelIssue(ctx, parameter["required"]);
+      }
+    });
+
+const AgentFlagType = (parameter: { [key: string]: AgentModelParameter }) =>
+  z
+    .boolean()
+    .optional()
+    .superRefine((val, ctx) => {
+      if (val !== undefined && val == true) {
+        addAgentModelIssue(ctx, parameter["true"]);
       }
     });
 
@@ -113,6 +128,20 @@ const StateSchema = z.object({
     required: {
       priority: 99999,
       aiMessage: "店内のご利用でよろしいですか？",
+      dialog: {
+        yes(state: any) {
+          const update: StateSchemaType = {
+            eatIn: true,
+          };
+          return state.appendState(update);
+        },
+        no(state: any) {
+          const update: StateSchemaType = {
+            eatIn: false,
+          };
+          return state.appendState(update);
+        },
+      },
     },
   }),
   order: AgentOrderType(OrderSchema, {
@@ -127,10 +156,31 @@ const StateSchema = z.object({
       agent: AGENT_ASK_TO_ORDER,
     },
   }),
+  askFlg: AgentFlagType({
+    true: {
+      priority: 9900,
+      aiMessage: "ご注文をどうぞ",
+      agent: AGENT_ASK_TO_ORDER,
+    },
+  }),
   confirmed: AgentBooleanType({
     required: {
       priority: 9999,
       aiMessage: "ご注文は以上でよろしいでしょうか",
+      dialog: {
+        yes(state: any) {
+          const update: StateSchemaType = {
+            confirmed: true,
+          };
+          return state.appendState(update);
+        },
+        no(state: any) {
+          const update: StateSchemaType = {
+            askFlg: true,
+          };
+          return state.appendState(update);
+        },
+      },
     },
   }),
 });
