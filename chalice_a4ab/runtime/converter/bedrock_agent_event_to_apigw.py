@@ -13,6 +13,15 @@ from chalice_a4ab.runtime.pydantic_tool.utility import PydanticUtility as u
 # Header key constant : Content-Type
 HEADER_KEY_CONTENT_TYPE = "content-type"
 
+# Session attribute key in received event
+SESSION_ATTRIBUTE_KEY = "sessionAttributes"
+# Prompt session attribute key in received event
+PROMPT_SESSION_ATTRIBUTE_KEY = "promptSessionAttributes"
+# Session attribute mapping in header
+SESSION_ATTRIBUTE_HEADER_PREFIX = "SESSION_ATTRIBUTES"
+# Prompt session attribute mapping in header
+PROMPT_SESSION_ATTRIBUTE_HEADER_PREFIX = "PROMPT_SESSION_ATTRIBUTES"
+
 
 class BedrockAgentEventToApiGateway(EventConverter):
     # Content type of the Bedrock Agent event
@@ -65,10 +74,14 @@ class BedrockAgentEventToApiGateway(EventConverter):
         apigw_event.requestContext.httpMethod = agent_event.http_method
         apigw_event.requestContext.resourcePath = agent_event.api_path
         apigw_event.headers[HEADER_KEY_CONTENT_TYPE] = self._content_type
-        if "sessionAttributes" in event:
-            attributes = event["sessionAttributes"]
+        if SESSION_ATTRIBUTE_KEY in event:
+            attributes = event[SESSION_ATTRIBUTE_KEY]
             for key in attributes:
-                apigw_event.headers[f"SESSION_ATTRIBUTE.{key}"] = attributes[key]
+                apigw_event.headers[f"{SESSION_ATTRIBUTE_HEADER_PREFIX}.{key}"] = attributes[key]
+        if PROMPT_SESSION_ATTRIBUTE_KEY in event:
+            attributes = event[PROMPT_SESSION_ATTRIBUTE_KEY]
+            for key in attributes:
+                apigw_event.headers[f"{PROMPT_SESSION_ATTRIBUTE_HEADER_PREFIX}.{key}"] = attributes[key]
         # Set event body for chalice
         if self._is_contains_properties(agent_event):
             apigw_event.body = json.dumps(

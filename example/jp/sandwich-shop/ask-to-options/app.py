@@ -2,6 +2,7 @@ import json
 from typing import Type
 from chalice_a4ab import (
     Chalice,
+    read_session_attributes,
     AgentsForAmazonBedrockConfig,
     ParserLambdaAbortException,
     ParserLambdaResponseModel,
@@ -63,7 +64,7 @@ def confirm():
 
     注文を確定します。
     """
-    current_state = app.current_request.headers.get("session_attribute.state", {})
+    current_state = read_session_attributes(app, "STATE", {})
     print(current_state)
 
     return TalkResponse(message="注文を承りました").model_dump_json()
