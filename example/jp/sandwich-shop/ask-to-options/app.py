@@ -14,6 +14,7 @@ AgentsForAmazonBedrockConfig(
     instructions=(  #
         "あなたはサンドウィッチショップのスタッフをしています。"  #
         "注文の結果を確認して、オーダーを発行することができます。"  #
+        "注文はいずれも日本語で受け取ってください。"  #
         "注文の要求には丁寧に答えるようにしてください。"  #
     )
 ).apply()
@@ -62,7 +63,7 @@ def confirm():
     """
     注文を確定します
 
-    注文を確定します。
+    「はい」、と返答を受け取ると実行します。注文を確定します。
     """
     current_state = read_session_attributes(app, "STATE", {})
     print(current_state)
@@ -75,7 +76,7 @@ def cancel():
     """
     注文をキャンセルします
 
-    注文をキャンセルします。
+    「いいえ」、と返答を受け取ると実行します。注文をキャンセルします。
     """
     return TalkResponse(message="注文をキャンセルしました").model_dump_json()
 
