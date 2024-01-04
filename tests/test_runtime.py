@@ -1,4 +1,5 @@
 from chalice_spec.docs import Docs
+from chalice_a4ab import read_session_attributes, read_prompt_session_attributes, read_body
 from chalice_a4ab.runtime.models.parser_lambda import PromptType
 from chalice_a4ab.runtime.parser_lambda.exceptions import ParserLambdaAbortException
 from tests.schema import TestSchema, AnotherSchema
@@ -11,6 +12,7 @@ from .test_utility import (
     APIParameter,
 )
 from pytest import raises
+from chalice_a4ab.runtime.pydantic_tool.utility import PydanticUtility as u
 
 
 def test_invoke_from_agents_for_amazon_bedrock():
@@ -31,10 +33,58 @@ def test_invoke_from_agents_for_amazon_bedrock():
         docs=Docs(request=TestSchema, response=AnotherSchema),
     )
     def get_post():
+        # Check Lambda Input
+        assert "hello" == read_body(app, TestSchema).hello
+        assert 123 == read_body(app, TestSchema).world
+        assert "string" == read_session_attributes(app, "STRING")
+        assert "string" == read_prompt_session_attributes(app, "STRING")
         return AnotherSchema(nintendo="koikoi", atari="game").json()
 
     response = app(
         parameter_agents_for_amazon_bedrock(APIParameter(httpMethod="POST", apiPath="/posts")),
+        {},
+    )
+    assert response["response"]["httpStatusCode"] == 200
+    assert "nintendo" in response["response"]["responseBody"]["application/json"]["body"]
+    assert "atari" in response["response"]["responseBody"]["application/json"]["body"]
+    assert "koikoi" in response["response"]["responseBody"]["application/json"]["body"]
+
+    json_data = spec.agents_for_bedrock_schema_json()
+    assert spec.title in json_data
+
+
+def test_invoke_from_agents_for_amazon_bedrock_no_session_state():
+    """
+    Normaly :: Invoke from Amazon Bedrock Agent without session state
+
+    Condition:
+        Invoke from Amazon Bedrock Agent without session state
+    Expects:
+        Return response for Amazon Bedrock Agent
+    """
+    app, spec = setup_test()
+
+    @app.route(
+        "/posts",
+        methods=["POST"],
+        content_types=["application/json"],
+        docs=Docs(request=TestSchema, response=AnotherSchema),
+    )
+    def get_post():
+        # Check Lambda Input
+        assert "hello" == read_body(app, TestSchema).hello
+        assert 123 == read_body(app, TestSchema).world
+        assert "string" != read_session_attributes(app, "string")
+        assert "string" != read_prompt_session_attributes(app, "string")
+        return AnotherSchema(nintendo="koikoi", atari="game").json()
+
+    # Remove Session Attributes
+    input = parameter_agents_for_amazon_bedrock(APIParameter(httpMethod="POST", apiPath="/posts"))
+    del input["sessionAttributes"]
+    del input["promptSessionAttributes"]
+
+    response = app(
+        input,
         {},
     )
     assert response["response"]["httpStatusCode"] == 200
@@ -63,6 +113,11 @@ def test_invoke_from_agents_for_amazon_bedrock_direct_chalice():
         content_types=["application/json"],
     )
     def get_post():
+        # Check Lambda Input
+        assert "hello" == read_body(app, TestSchema).hello
+        assert 123 == read_body(app, TestSchema).world
+        assert "string" == read_session_attributes(app, "string")
+        assert "string" == read_prompt_session_attributes(app, "string")
         return AnotherSchema(nintendo="koikoi", atari="game").json()
 
     response = app(
@@ -93,6 +148,11 @@ def test_invoke_from_api_gateway():
         docs=Docs(request=TestSchema, response=AnotherSchema),
     )
     def get_post():
+        # Check Lambda Input
+        assert "abc" == read_body(app, TestSchema).hello
+        assert 123 == read_body(app, TestSchema).world
+        assert "string" != read_session_attributes(app, "string")
+        assert "string" != read_prompt_session_attributes(app, "string")
         return AnotherSchema(nintendo="koikoi", atari="game").json()
 
     response = app(
@@ -121,6 +181,11 @@ def test_invoke_from_api_gateway_direct_chalice():
 
     @app.route("/posts", methods=["POST"], content_types=["application/json"])
     def get_post():
+        # Check Lambda Input
+        assert "abc" == read_body(app, TestSchema).hello
+        assert 123 == read_body(app, TestSchema).world
+        assert "string" != read_session_attributes(app, "string")
+        assert "string" != read_prompt_session_attributes(app, "string")
         return AnotherSchema(nintendo="koikoi", atari="game").json()
 
     response = app(

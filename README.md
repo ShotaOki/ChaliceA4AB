@@ -51,6 +51,49 @@ https://github.com/ShotaOki/ChaliceA4AB
    ...
    ```
 
+1. Read parameters in function
+
+   ```python
+   from chalice_a4ab import read_session_attributes, read_prompt_session_attributes, read_body
+
+   @app.router("path-name")
+   def method_name():
+
+      # Read body
+      body: PyDanticParserClass = read_body(app, PyDanticParserClass)
+
+      # Read session attributes :: key -> session attribute key
+      session_attributes: dict = read_session_attributes(app, "KEY")
+
+      # Read prompt session attributes :: key -> prompt session attribute key
+      prompt_session_attributes: dict = read_prompt_session_attributes(app, "KEY")
+
+      # Return response (dict type)
+      return {
+         "response": "object"
+      }
+   ```
+
+   or read directory
+
+   ```python
+   @app.router("path-name")
+   def method_name():
+      # Read body
+      body : dict = app.current_request.json_body
+
+      # Read Session attributes or Prompt attributes from header
+      for k in app.current_request.headers:
+         if k.startsWith("sessionAttributes")
+            # Session attributes
+            print(app.current_request.headers[k])
+         if k.startsWith("promptSessionAttributes")
+            # Prompt session attributes
+            print(app.current_request.headers[k])
+
+      return {}
+   ```
+
 1. **(Optional)** Add Parser Lambda Function
 
    Add these decorator, function becomes "parser lambda"
@@ -125,7 +168,46 @@ Create OpenAPI Schema automatically.
            )
        ))
    def post_method():
+      """
+      Function summary
+
+      Description of this method, brabrarba, this comment becomes LLM Prompt.
+      """
    ...
+   ```
+
+1. Read values with PyDantic
+
+   ```python
+   @app.router("path-name",
+       methods=["POST"],
+       docs=Docs(
+           post=Operation(
+               request=PyDanticRequestModelClass,
+               response=PyDanticOutputModelClass,
+           )
+       ))
+   def method_name():
+      """
+      Function summary
+
+      Description of this method, brabrarba, this comment becomes LLM Prompt.
+      """
+
+      # Read body with utility
+      body: PyDanticRequestModelClass = read_body(app, PyDanticRequestModelClass)
+
+      # or directory
+      #   Pydantic V1 -> parse_obj()
+      #   Pydantic V2 -> model_validate()
+      body = PyDanticRequestModelClass.model_validate(app.current_request.json_body)
+
+      # return response as dict class
+      #   Pydantic V1 -> json()
+      #   Pydantic V2 -> model_dump_json()
+      return PyDanticOutputModelClass(
+         response=...
+      ).model_dump_json()
    ```
 
    documentation for `@app.router` sample: https://github.com/TestBoxLab/chalice-spec

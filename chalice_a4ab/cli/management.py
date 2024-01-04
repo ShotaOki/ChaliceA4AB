@@ -19,6 +19,7 @@ class CallerIdentity(BaseModel):
     SessionParameter: dict
     AgentConfig: AgentsForAmazonBedrockConfig
     DefaultBucketName: str = Field("")
+    DefaultLambdaArn: str = Field("")
     Stage: str = Field("dev")
 
     @property
@@ -33,10 +34,14 @@ class CallerIdentity(BaseModel):
 
     @property
     def lambda_arn(self):
+        if len(self.DefaultLambdaArn) >= 1:
+            return self.DefaultLambdaArn
         return f"arn:aws:lambda:{self.Region}:{self.Account}:function:{self.lambda_function_name}"
 
     @property
     def lambda_function_name(self):
+        if len(self.DefaultLambdaArn) >= 1:
+            return self.DefaultLambdaArn.split(":")[-1]
         return f"{self.AgentConfig.title}-{self.Stage}"
 
     @property
@@ -58,30 +63,46 @@ class CallerIdentity(BaseModel):
 def read_identity(
     agent_config: AgentsForAmazonBedrockConfig,
     session_parameter: dict,
-    bucket_name: str = "",
-):
+    default_bucket_name: str = "",
+    default_lambda_arn: str = "",
+    default_identity: dict = None,
+    default_region: str = "us-east-1",
+    default_stage: str = None,
+) -> CallerIdentity:
     """
     Read Account Identity from STS
     """
-    # Create Session on Current Region
-    session = boto3.Session(**session_parameter)
-    # Get Account Into
-    identity = session.client("sts").get_caller_identity()
-    # Get Region
-    region = session._session.get_config_variable("region")
+    if default_identity is None:
+        # Create Session on Current Region
+        session = boto3.Session(**session_parameter)
+        # Get Account Into
+        identity = session.client("sts").get_caller_identity()
+        # Get Region
+        region = session._session.get_config_variable("region")
+    else:
+        # Passed identity from outside
+        identity = default_identity
+        # Read reagion from outside
+        region = default_region
+
     if region is None:
         # Failed to get :: set default region
-        region = "us-east-1"
+        region = default_region
     # Set Region
     identity["Region"] = region
     # Set Session Parameter
     identity["SessionParameter"] = session_parameter
     # Set Identity Config
     identity["AgentConfig"] = agent_config
-    # Set Bucket Name
-    identity["DefaultBucketName"] = bucket_name
+    # Set Bucket Name (If Set)
+    identity["DefaultBucketName"] = default_bucket_name
+    # Set Lambda ARN (If Set)
+    identity["DefaultLambdaArn"] = default_lambda_arn
+    # Set Stage Name (If Set)
+    if default_stage is not None:
+        identity["Stage"] = default_stage
     # Parse with pydantic
-    item = u(CallerIdentity).parse_obj(identity)
+    item: CallerIdentity = u(CallerIdentity).parse_obj(identity)
     # Return Identity
     return item
 
@@ -202,6 +223,12 @@ def create_resource(template_file: str, identity: CallerIdentity, cfn):
 
 
 def get_agent_info(bedrock_agent, agent_id: str):
+    """
+    Get current agent info from AWS resource
+
+    :return: agent_editable -> Information (Use Update Method)
+    :return: agent_readonly -> Information (Do not use update method)
+    """
     response = bedrock_agent.get_agent(agentId=agent_id)
     agent_editable: AgentModelEditable = u(AgentModelEditable).parse_obj(response["agent"])
     agent_readonly: AgentModelReadonly = u(AgentModelReadonly).parse_obj(response["agent"])
@@ -211,6 +238,11 @@ def get_agent_info(bedrock_agent, agent_id: str):
 def update_editable_agent_with_override_lambda(
     identity: CallerIdentity, config: AgentsForAmazonBedrockConfig, editable_agent: AgentModelEditable
 ):
+    """
+    Update Agents
+
+    :editable_agent -> editable info from get_agent_info()
+    """
     # Parser Lambda Setting
     for type in [
         PromptType.PRE_PROCESSING,
@@ -521,4 +553,7 @@ def info(identity: CallerIdentity, quiet: bool = False):
             )
         )
 
-    return agent_info.agent_id
+    return {
+        "AgentId": agent_info.agent_id,
+        "AgentAliasId": alias_map
+    }
