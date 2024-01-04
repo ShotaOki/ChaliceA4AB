@@ -26,14 +26,18 @@ class OrderInput(BaseModel):
     """
     注文の入力です
 
-    注文の情報を格納します。商品名をname、数をcountsとして受け取ります。
-    数は省略することができます。
+    注文の情報を格納します。商品名をname、数をcounts、パンをbread、ドレッシングをdressingとして受け取ります。
+    数、パン、ドレッシングは省略することができます。
     """
 
     # 商品名です
     name: str
     # 数量です
     counts: int
+    # パンの種類です
+    bread: str
+    # ドレッシングの種類です
+    dressing: str
 
 
 class TalkResponse(BaseModel):
@@ -66,8 +70,8 @@ def talk_to_aura():
     """
     注文を受け取ります（注文はオーケストレーションで割り込みます）
 
-    サンドイッチの注文を受け取ります。商品名をname、数量をcountsとして受け取ります。
-    数量は省略することができます。
+    サンドイッチの注文を受け取ります。商品名をname、数をcounts、パンをbread、ドレッシングをdressingとして受け取ります。
+    数、パン、ドレッシングは省略することができます。
     """
     return None
 
@@ -87,14 +91,24 @@ def orchestration(event: dict, default_result: ParserLambdaResponseModel) -> Par
             api_parameter = input.response_details.action_group_invocation.action_group_input
             # サーバを立てるAPIに割り込みます
             if api_name == "/accept_order":
+                # 注文の情報を受け取ります
+                # name以外は省略されることがあります。その場合はキーが存在しない状態で受け取ります
                 name = api_parameter.get("name", {}).get("value", "-")
                 counts = api_parameter.get("counts", {}).get("value", "1")
+                bread = api_parameter.get("bread", {}).get("value", None)
+                dressing = api_parameter.get("dressing", {}).get("value", None)
+                result = {"id": str(uuid4()), "name": name, "count": int(counts)}
+                # パンとドレッシングの指定があるなら、オーダーに書き込みます
+                if bread is not None:
+                    result["bread"] = bread
+                if dressing is not None:
+                    result["dressing"] = dressing
                 # LLMの応答を上書きします
                 raise ParserLambdaAbortException(
                     message=json.dumps(
                         {
                             "action": "json_control.append_order",
-                            "value": {"id": str(uuid4()), "name": name, "count": int(counts)},
+                            "value": result,
                         }
                     )
                 )
