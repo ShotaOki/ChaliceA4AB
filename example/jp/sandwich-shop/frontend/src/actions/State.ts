@@ -29,6 +29,8 @@ const useStateContent = create<{
       } else {
         response.order = [s];
       }
+      // Ephemeral領域をクリアする
+      response.ephemeral = undefined;
       set(() => {
         return {
           state: response,
@@ -45,6 +47,8 @@ const useStateContent = create<{
           ...s,
         };
       }
+      // Ephemeral領域をクリアする
+      response.ephemeral = undefined;
       set(() => {
         return {
           state: response,
@@ -54,6 +58,8 @@ const useStateContent = create<{
     },
     appendState(s: StateSchemaType) {
       const current = get().state;
+      // Ephemeral領域をクリアする
+      current.ephemeral = undefined;
       set(() => {
         return {
           state: {

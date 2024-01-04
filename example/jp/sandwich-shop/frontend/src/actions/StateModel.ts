@@ -168,13 +168,17 @@ const StateSchema = z.object({
       agent: AGENT_ASK_TO_ORDER,
     },
   }),
-  askFlg: AgentFlagType({
-    true: {
-      priority: 9900,
-      aiMessage: "ご注文をどうぞ",
-      agent: AGENT_ASK_TO_ORDER,
-    },
-  }),
+  ephemeral: z
+    .object({
+      askFlg: AgentFlagType({
+        true: {
+          priority: 9900,
+          aiMessage: "ご注文をどうぞ",
+          agent: AGENT_ASK_TO_ORDER,
+        },
+      }),
+    })
+    .optional(),
   confirmed: AgentBooleanType({
     required: {
       priority: 9999,
@@ -188,7 +192,9 @@ const StateSchema = z.object({
         },
         no(state: any) {
           const update: StateSchemaType = {
-            askFlg: true,
+            ephemeral: {
+              askFlg: true,
+            },
           };
           return state.appendState(update);
         },

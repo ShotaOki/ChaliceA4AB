@@ -27,11 +27,15 @@ export type OrderSchemaType = OrderSchemaOptionType & {
   count: number;
 };
 
+export type EphemeralSchemaType = {
+  askFlg?: boolean;
+};
+
 export type StateSchemaType = {
   eatIn?: boolean;
   commitOrder?: boolean;
   order?: OrderSchemaType[];
-  askFlg?: boolean;
+  ephemeral?: EphemeralSchemaType;
   confirmed?: boolean;
 };
 
