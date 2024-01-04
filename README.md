@@ -168,6 +168,11 @@ Create OpenAPI Schema automatically.
            )
        ))
    def post_method():
+      """
+      Function summary
+
+      Description of this method, brabrarba, this comment becomes LLM Prompt.
+      """
    ...
    ```
 
@@ -183,6 +188,12 @@ Create OpenAPI Schema automatically.
            )
        ))
    def method_name():
+      """
+      Function summary
+
+      Description of this method, brabrarba, this comment becomes LLM Prompt.
+      """
+
       # Read body with utility
       body: PyDanticRequestModelClass = read_body(app, PyDanticRequestModelClass)
 
