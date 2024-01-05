@@ -48,9 +48,9 @@
 1.  **削除**  
     プロジェクトを削除するときは、以下のコマンドを実行します
 
-        ```bash
-        python3 deploy-hook.py delete && cdk destroy --all
+    ```bash
+    python3 deploy-hook.py delete && cdk destroy --all
 
-        # もしプロファイルがdefaultでないなら、上のコマンドの代わりに、以下のコマンドを実行します
-        python3 deploy-hook.py delete --profile ${プロファイル名} --region us-east-1 && cdk destroy --all --profile ${プロファイル名}
-        ```
+    # もしプロファイルがdefaultでないなら、上のコマンドの代わりに、以下のコマンドを実行します
+    python3 deploy-hook.py delete --profile ${プロファイル名} --region us-east-1 && cdk destroy --all --profile ${プロファイル名}
+    ```

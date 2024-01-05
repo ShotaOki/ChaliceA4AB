@@ -51,6 +51,13 @@ https://github.com/ShotaOki/ChaliceA4AB
    ...
    ```
 
+1. Update requirements.txt
+
+   ```txt
+   chalice-a4ab
+   pydantic
+   ```
+
 1. Read parameters in function
 
    ```python
@@ -143,6 +150,14 @@ Create OpenAPI Schema automatically.
 
    ```python
    pip install -U chalice chalice-spec==0.7.0 chalice-a4ab boto3 pydantic
+   ```
+
+1. Update requirements.txt
+
+   ```txt
+   chalice-spec==0.7.0
+   chalice-a4ab
+   pydantic
    ```
 
 1. Add Setting
