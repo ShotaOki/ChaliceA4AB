@@ -35,6 +35,28 @@
     cdk deploy --all --profile ${プロファイル名} && python3 deploy-hook.py deploy --profile ${プロファイル名} --region us-east-1
     ```
 
+    デプロイコマンドを実行すると、frontend のディレクトリに、.env のファイルが作成されます
+
+1.  **Web アプリのビルド**  
+    frontend のディレクトリで以下のコマンドを実行します。
+
+    ```bash
+    npm install
+    ```
+
+    ```bash
+    npm run dev
+    ```
+
+1.  **ブラウザを開く**  
+    以下の URL をブラウザで開きます。
+
+    http://localhost:5173
+
+    ブラウザで開いた後、「アカウントを作成する」タブを選んで、ログインユーザーを作成します。
+
+## 更新と削除
+
 1.  **更新**  
     ソースコードを更新する場合も、デプロイと同じコマンドを実行します
 
