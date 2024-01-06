@@ -163,13 +163,17 @@ Create OpenAPI Schema automatically.
 1. Add Setting
 
    ```python
-   from chalice_a4ab import Chalice, AgentsForAmazonBedrockConfig
+   from chalice_a4ab import Chalice, AgentsForAmazonBedrockConfig, ModelTypesAntropicClaudeV2
    from chalice_spec.docs import Docs, Operation
 
    # Set Config for Agents for Amazon bedrock
    AgentsForAmazonBedrockConfig(
-       instructions="Situation Settings for talking with Human and agent.(more than 40 words)",
-       description="Description of application",
+      # Agent Situation
+      instructions="Situation Settings for talking with Human and agent.(more than 40 words)",
+      # Agent Description
+      description="Description of application",
+      # Use Model :: Claude V2
+      foundation_model=ModelTypesAntropicClaudeV2,
    ).apply()
 
    app = Chalice(app_name="app-name")
