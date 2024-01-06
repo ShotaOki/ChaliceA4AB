@@ -216,7 +216,7 @@ Create OpenAPI Schema automatically.
       # Read body with utility
       body: PyDanticRequestModelClass = read_body(app, PyDanticRequestModelClass)
 
-      # or directory
+      # or direct
       #   Pydantic V1 -> parse_obj()
       #   Pydantic V2 -> model_validate()
       body = PyDanticRequestModelClass.model_validate(app.current_request.json_body)
