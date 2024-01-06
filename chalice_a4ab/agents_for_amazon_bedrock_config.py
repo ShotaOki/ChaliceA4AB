@@ -5,6 +5,7 @@ from pathlib import Path
 from io import BytesIO
 from chalice_a4ab.runtime.pydantic_tool.utility import PydanticUtility as u
 from chalice_a4ab.runtime.models.parser_lambda import PromptType
+from chalice_a4ab.model_types import ModelTypesAntropicClaudeV2
 
 # Global Variable: OpenAPI Format Exporter
 _spec = None
@@ -39,7 +40,7 @@ class AgentsForAmazonBedrockConfig(BaseModel):
     agent_version: str = Field("DRAFT")
     agent_action_name: str = Field("Main")
     idle_session_ttl_in_seconds: int = Field(900)
-    foundation_model: str = Field("anthropic.claude-v2")
+    foundation_model: str = Field(ModelTypesAntropicClaudeV2)
 
     _enabled_prompt_type_list: List[PromptType] = PrivateAttr([])
 

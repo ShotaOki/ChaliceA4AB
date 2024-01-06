@@ -1,4 +1,3 @@
-import json
 import re
 import logging
 
@@ -14,8 +13,6 @@ logger = logging.getLogger()
 # This parser lambda is an example of how to parse the LLM output for the default PreProcessing prompt
 def lambda_handler(event, context):
     logger.info("Lambda input: " + str(event))
-
-    prompt_type = event["promptType"]
 
     # Sanitize LLM response
     model_response = sanitize_response(event["invokeModelRawResponse"])

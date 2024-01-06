@@ -18,6 +18,11 @@ from chalice_a4ab.runtime.models.parser_lambda import (  # noqa: F401
     OrchestrationResponseModel,
     PromptType,
 )
+from chalice_a4ab.model_types import (  # noqa: F401
+    ModelTypesAntropicClaudeV1Instant,
+    ModelTypesAntropicClaudeV2,
+    ModelTypesAntropicClaudeV2_1,
+)
 
 try:
     from chalice_spec import ChaliceWithSpec, PydanticPlugin

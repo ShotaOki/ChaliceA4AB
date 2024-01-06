@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chalice-a4ab"
-version = "0.2.2.8"
+version = "0.2.2.9"
 description = "Chalice x Agents for Amazon Bedrock plug-ins"
 authors = ["Shota Oki"]
 repository = "https://github.com/ShotaOki/ChaliceA4AB"

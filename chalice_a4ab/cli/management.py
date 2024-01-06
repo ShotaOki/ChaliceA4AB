@@ -6,7 +6,7 @@ import io
 
 import yaml
 from chalice_a4ab.cli.agent_model import AgentModelEditable, AgentModelReadonly
-from chalice_a4ab.runtime.models.parser_lambda import PromptType
+from chalice_a4ab.runtime.models.parser_lambda import PromptTypeAll
 from chalice_a4ab.runtime.pydantic_tool.utility import PydanticUtility as u
 from chalice_a4ab import AgentsForAmazonBedrockConfig
 
@@ -244,12 +244,7 @@ def update_editable_agent_with_override_lambda(
     :editable_agent -> editable info from get_agent_info()
     """
     # Parser Lambda Setting
-    for type in [
-        PromptType.PRE_PROCESSING,
-        PromptType.ORCHESTRATION,
-        PromptType.POST_PROCESSING,
-        PromptType.KNOWLEDGE_BASE_RESPONSE_GENERATION,
-    ]:
+    for type in PromptTypeAll:
         if type in config._enabled_prompt_type_list:
             editable_agent.set_enable_configration(type, True)
         else:
@@ -553,7 +548,4 @@ def info(identity: CallerIdentity, quiet: bool = False):
             )
         )
 
-    return {
-        "AgentId": agent_info.agent_id,
-        "AgentAliasId": alias_map
-    }
+    return {"AgentId": agent_info.agent_id, "AgentAliasId": alias_map}

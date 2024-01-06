@@ -1,5 +1,6 @@
 from typing import Any, Callable, List, Optional
 from chalice_a4ab.agents_for_amazon_bedrock_config import AgentsForAmazonBedrockConfig
+from chalice_a4ab.model_types import ModelTypes
 from chalice_a4ab.runtime.models.parser_lambda import (
     ParserLambdaInputModel,
     PromptType,
@@ -10,12 +11,14 @@ from chalice_a4ab.runtime.pydantic_tool.utility import PydanticUtility as u
 class ParserFunctionEventHandler:
     _handler: Callable[..., Any]
     _prompt_type: PromptType
+    _foundation_model: ModelTypes = ModelTypes.CLAUDE_V2
 
     def __init__(
         self, prompt_type: PromptType, handler: Callable[..., Any], config: Optional[AgentsForAmazonBedrockConfig]
     ):
         self._prompt_type = prompt_type
         self._handler = handler
+        self._foundation_model = ModelTypes.CLAUDE_V2
 
         # Update Config :: Append Enabled Prompt Type
         target_config = config
@@ -25,6 +28,12 @@ class ParserFunctionEventHandler:
         # Add Prompt Type List
         if (target_config is not None) and not (prompt_type in target_config._enabled_prompt_type_list):
             target_config._enabled_prompt_type_list.append(prompt_type)
+
+        if target_config is not None:
+            if target_config.foundation_model == ModelTypes.CLAUDE_V2.value:
+                self._foundation_model = ModelTypes.CLAUDE_V2
+            elif target_config.foundation_model == ModelTypes.CLAUDE_V2_1.value:
+                self._foundation_model = ModelTypes.CLAUDE_V2_1
 
     def __call__(self, event: dict, context: dict):
         return self._handler(event, context)

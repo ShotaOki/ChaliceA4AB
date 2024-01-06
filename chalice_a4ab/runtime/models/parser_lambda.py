@@ -80,3 +80,11 @@ class ParserLambdaResponseModel(BaseModel):
 
     class Config:
         use_enum_values = True
+
+
+PromptTypeAll = [
+    PromptType.ORCHESTRATION,
+    PromptType.POST_PROCESSING,
+    PromptType.PRE_PROCESSING,
+    PromptType.KNOWLEDGE_BASE_RESPONSE_GENERATION,
+]
