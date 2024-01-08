@@ -21,6 +21,7 @@ input_parser.add_argument("--profile", type=str, help="profile name")
 
 class SessionState(BaseModel):
     session_attributes: dict = Field(alias="sessionAttributes")
+    prompt_session_attributes: dict = Field(alias="promptSessionAttributes")
 
 
 class RunAgentParameter(BaseModel):

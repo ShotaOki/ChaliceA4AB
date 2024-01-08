@@ -132,6 +132,12 @@ https://github.com/ShotaOki/ChaliceA4AB
        # [MEMO] Throw this Exception, Overwrite LLM response
        # raise ParserLambdaAbortException(message="Overwrited")
        return default_result
+
+   # POST_PROCESSING
+   @app.parser_lambda_post_processing()
+   def post_processing(event, default_result: ParserLambdaResponseModel) -> ParserLambdaResponseModel:
+      # [Memo] default: post_processing is invalid
+      return default_result
    ```
 
 1. Application works ::
@@ -300,6 +306,18 @@ Create OpenAPI Schema automatically.
 MIT
 
 # API
+
+## Construct
+
+AgentsForAmazonBedrockConfig
+
+| Property                    | Descritpion                                            |
+| :-------------------------- | :----------------------------------------------------- |
+| title                       | Application Name                                       |
+| instructions                | Situation                                              |
+| foundation_model            | Bedrock Model ID (Default: ModelTypesAntropicClaudeV2) |
+| openapi_version             | OpenAPI version (Support : 3.0 higher)                 |
+| idle_session_ttl_in_seconds | Session timeout                                        |
 
 ## Command Line TOOL
 
