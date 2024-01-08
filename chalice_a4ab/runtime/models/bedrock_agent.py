@@ -87,6 +87,22 @@ class BedrockAgentResponseParameterModel(BaseModel):
         """
         self.response_body[content_type] = BedrockAgentResponsePesponceBodyModel(body=body)
 
+    def add_session_attributes(self, key: str, session_attribute: str) -> None:
+        """
+        Add session attributes
+        """
+        if self.session_attributes is None:
+            self.session_attributes = {}
+        self.session_attributes[key] = session_attribute
+
+    def add_prompt_session_attributes(self, key: str, prompt_session_attribute: str) -> None:
+        """
+        Add prompt session attributes
+        """
+        if self.prompt_session_attributes is None:
+            self.prompt_session_attributes = {}
+        self.prompt_session_attributes[key] = prompt_session_attribute
+
 
 class BedrockAgentResponseModel(BaseModel):
     """

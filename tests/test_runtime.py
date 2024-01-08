@@ -3,6 +3,7 @@ from chalice_a4ab import read_session_attributes, read_prompt_session_attributes
 from chalice_a4ab.runtime.models.parser_lambda import PromptType
 from chalice_a4ab.runtime.parser_lambda.exceptions import ParserLambdaAbortException
 from tests.schema import TestSchema, AnotherSchema
+from chalice import Response
 from .test_utility import (
     setup_test,
     parser_lambda_input,
@@ -12,7 +13,6 @@ from .test_utility import (
     APIParameter,
 )
 from pytest import raises
-from chalice_a4ab.runtime.pydantic_tool.utility import PydanticUtility as u
 
 
 def test_invoke_from_agents_for_amazon_bedrock():
@@ -48,6 +48,10 @@ def test_invoke_from_agents_for_amazon_bedrock():
     assert "nintendo" in response["response"]["responseBody"]["application/json"]["body"]
     assert "atari" in response["response"]["responseBody"]["application/json"]["body"]
     assert "koikoi" in response["response"]["responseBody"]["application/json"]["body"]
+    assert "string" in response["response"]["sessionAttributes"]
+    assert "string" == response["response"]["sessionAttributes"]["string"]
+    assert "string" in response["response"]["promptSessionAttributes"]
+    assert "string" == response["response"]["promptSessionAttributes"]["string"]
 
     json_data = spec.agents_for_bedrock_schema_json()
     assert spec.title in json_data
@@ -91,6 +95,61 @@ def test_invoke_from_agents_for_amazon_bedrock_no_session_state():
     assert "nintendo" in response["response"]["responseBody"]["application/json"]["body"]
     assert "atari" in response["response"]["responseBody"]["application/json"]["body"]
     assert "koikoi" in response["response"]["responseBody"]["application/json"]["body"]
+    assert not ("sessionAttributes" in response["response"])
+    assert not ("promptSessionAttributes" in response["response"])
+
+    json_data = spec.agents_for_bedrock_schema_json()
+    assert spec.title in json_data
+
+
+def test_invoke_from_agents_for_amazon_bedrock_with_session_state():
+    """
+    Normaly :: Invoke from Amazon Bedrock Agent
+
+    Condition:
+        Invoke from Amazon Bedrock Agent
+    Expects:
+        Return response for Amazon Bedrock Agent
+    """
+    app, spec = setup_test()
+
+    @app.route(
+        "/posts",
+        methods=["POST"],
+        content_types=["application/json"],
+        docs=Docs(request=TestSchema, response=AnotherSchema),
+    )
+    def get_post():
+        # Check Lambda Input
+        assert "hello" == read_body(app, TestSchema).hello
+        assert 123 == read_body(app, TestSchema).world
+        assert "string" == read_session_attributes(app, "STRING")
+        assert "string" == read_prompt_session_attributes(app, "STRING")
+        return Response(
+            status_code=200,
+            headers={
+                "SESSION_ATTRIBUTES.custom-response": "value1",
+                "PROMPT_SESSION_ATTRIBUTES.custom-response": "value2",
+            },
+            body=AnotherSchema(nintendo="koikoi", atari="game").json(),
+        )
+
+    response = app(
+        parameter_agents_for_amazon_bedrock(APIParameter(httpMethod="POST", apiPath="/posts")),
+        {},
+    )
+    assert response["response"]["httpStatusCode"] == 200
+    assert "nintendo" in response["response"]["responseBody"]["application/json"]["body"]
+    assert "atari" in response["response"]["responseBody"]["application/json"]["body"]
+    assert "koikoi" in response["response"]["responseBody"]["application/json"]["body"]
+    assert "string" in response["response"]["sessionAttributes"]
+    assert "string" == response["response"]["sessionAttributes"]["string"]
+    assert "string" in response["response"]["promptSessionAttributes"]
+    assert "string" == response["response"]["promptSessionAttributes"]["string"]
+    assert "custom-response" in response["response"]["sessionAttributes"]
+    assert "value1" == response["response"]["sessionAttributes"]["custom-response"]
+    assert "custom-response" in response["response"]["promptSessionAttributes"]
+    assert "value2" == response["response"]["promptSessionAttributes"]["custom-response"]
 
     json_data = spec.agents_for_bedrock_schema_json()
     assert spec.title in json_data

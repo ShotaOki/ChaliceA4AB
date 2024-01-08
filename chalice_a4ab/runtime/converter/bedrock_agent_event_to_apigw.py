@@ -1,3 +1,4 @@
+from typing import List
 from chalice_a4ab.runtime.models.bedrock_agent import (
     BedrockAgentEventModel,
     BedrockAgentPropertyModel,
@@ -113,4 +114,21 @@ class BedrockAgentEventToApiGateway(EventConverter):
         # set from chalice response
         result.response.http_status_code = response["statusCode"]
         result.response.add_response_body(content_type=self._content_type, body=response["body"])
-        return u(result).dict(by_alias=True)
+        # Set Session Attributes from input events
+        for key, value in agent_event.session_attributes.items():
+            result.response.add_session_attributes(key, value)
+        for key, value in agent_event.prompt_session_attributes.items():
+            result.response.add_prompt_session_attributes(key, value)
+        # Set Session Attributes from Header response
+        if "headers" in response:
+            for key, value in response["headers"].items():
+                uppercase_key: str = key.upper()
+                split_key: List[str] = key.split(".", maxsplit=2)
+                if len(split_key) >= 2:
+                    # Read Header "SESSION_ATTRIBUTES.attribute_name": "value"
+                    if uppercase_key.startswith(f"{SESSION_ATTRIBUTE_HEADER_PREFIX}."):
+                        result.response.add_session_attributes(split_key[1], value)
+                    # Read Header "PROMPT_SESSION_ATTRIBUTES.attribute_name": "value"
+                    if uppercase_key.startswith(f"{PROMPT_SESSION_ATTRIBUTE_HEADER_PREFIX}."):
+                        result.response.add_prompt_session_attributes(split_key[1], value)
+        return u(result).dict(by_alias=True, exclude_none=True)
