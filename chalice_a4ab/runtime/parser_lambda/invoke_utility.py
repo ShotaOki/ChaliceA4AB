@@ -13,6 +13,9 @@ from chalice_a4ab.runtime.parser_lambda.amazon_example.pre_processing import (
 from chalice_a4ab.runtime.parser_lambda.amazon_example.orchestration import (
     lambda_handler as orchestration_lambda_handler,
 )
+from chalice_a4ab.runtime.parser_lambda.amazon_example.post_processing import (
+    lambda_handler as post_processing_lambda_handler,
+)
 from chalice_a4ab.runtime.parser_lambda.amazon_example.v2_1.orchestration import (
     lambda_handler as orchestration_lambda_handler_v2_1,
 )
@@ -67,6 +70,9 @@ def invoke_agents_parser(target: AgentsParserFunction, event: dict, context: dic
                         # Model Version : Claude V2
                         # And, Prompt Type : Orchestration
                         return _invoke_agents_with_function(event, context, orchestration_lambda_handler, handler)
+                if handler._prompt_type == PromptType.POST_PROCESSING:
+                    # Prompt Type : Post Processing
+                    return _invoke_agents_with_function(event, context, post_processing_lambda_handler, handler)
     except Exception as e:
         failed_event = create_response_from_expception(event, e)
     return failed_event

@@ -29,6 +29,11 @@ class PreProcessingResponseModel(BaseModel):
     rationale: str
 
 
+class PostProcessingResponseModel(BaseModel):
+    response_text: str = Field(alias="responseText")
+    citations: Optional[dict] = Field(None, alias="citations")
+
+
 class AgentAskUserModel(BaseModel):
     response_text: str = Field(alias="responseText")
 
@@ -76,6 +81,9 @@ class ParserLambdaResponseModel(BaseModel):
     )
     orchestration_parsed_response: Optional[OrchestrationResponseModel] = Field(
         None, alias="orchestrationParsedResponse"
+    )
+    post_processing_parsed_response: Optional[PostProcessingResponseModel] = Field(
+        None, alias="postProcessingParsedResponse"
     )
 
     class Config:

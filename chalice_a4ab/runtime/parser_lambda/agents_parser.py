@@ -61,6 +61,13 @@ class AgentsParserFunction:
 
         return register_handler
 
+    def parser_lambda_post_processing(self, config: Optional[AgentsForAmazonBedrockConfig] = None):
+        def register_handler(event_function: Callable[..., Any]):
+            wrapper = ParserFunctionEventHandler(PromptType.POST_PROCESSING, event_function, config)
+            self._parser_function_handlers.append(wrapper)
+
+        return register_handler
+
     def parser_lambda_orchestration(self, config: Optional[AgentsForAmazonBedrockConfig] = None):
         def register_handler(event_function: Callable[..., Any]):
             wrapper = ParserFunctionEventHandler(PromptType.ORCHESTRATION, event_function, config)
@@ -77,6 +84,8 @@ def is_agents_parser_instance(target: AgentsParserFunction) -> bool:
         return False
     if hasattr(target, "parser_lambda_pre_processing") is False:
         return False
+    if hasattr(target, "parser_lambda_post_processing") is False:
+        return False
     if hasattr(target, "parser_lambda_orchestration") is False:
         return False
     return True
@@ -92,6 +101,11 @@ def mixin_agents_parser(cls):
         cls,
         "parser_lambda_pre_processing",
         AgentsParserFunction.parser_lambda_pre_processing,
+    )
+    setattr(
+        cls,
+        "parser_lambda_post_processing",
+        AgentsParserFunction.parser_lambda_post_processing,
     )
     setattr(
         cls,

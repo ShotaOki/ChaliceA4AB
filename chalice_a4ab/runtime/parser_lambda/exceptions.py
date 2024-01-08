@@ -1,6 +1,7 @@
 from chalice_a4ab.runtime.models.parser_lambda import (
     ParserLambdaResponseModel,
     ParserLambdaInputModel,
+    PostProcessingResponseModel,
     PromptType,
     PreProcessingResponseModel,
     OrchestrationResponseModel,
@@ -34,4 +35,6 @@ def create_response_from_expception(input_event: dict, exception: Exception) -> 
                 }
             ),
         )
+    elif input.prompt_type == PromptType.POST_PROCESSING:
+        response.post_processing_parsed_response = PostProcessingResponseModel(responseText=message)
     return u(response).dict(by_alias=True, exclude_none=True)

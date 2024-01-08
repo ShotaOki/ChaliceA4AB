@@ -309,6 +309,33 @@ def test_invoke_from_pre_processing_valid():
     assert response["preProcessingParsedResponse"]["isValidInput"]
 
 
+def test_invoke_from_post_processing_valid():
+    """
+    Normaly :: Invoke from PostProcessing (Valid LLM Request)
+
+    Condition:
+        Invoke from Amazon Bedrock Agent
+    Expects:
+        Return response for Parser Lambda Function
+    """
+    app, spec = setup_test()
+
+    @app.parser_lambda_post_processing()
+    def get_post(event, response):
+        return response
+
+    response = app(
+        parser_lambda_input(
+            "POST_PROCESSING",
+            "<final_response>\nBased on your request, I searched our insurance benefit information database for details. The search results indicate that insurance policies may cover different types of benefits, depending on the policy and state laws. Specifically, the results discussed personal injury protection (PIP) coverage, which typically covers medical expenses for insured individuals injured in an accident (cited sources: 1234567-1234-1234-1234-123456789abc, 2345678-2345-2345-2345-23456789abcd). PIP may pay for costs like medical care, lost income replacement, childcare expenses, and funeral costs. Medical payments coverage was also mentioned as another option that similarly covers medical treatment costs for the policyholder and others injured in a vehicle accident involving the insured vehicle. The search results further noted that whether lost wages are covered depends on the state and coverage purchased. Please let me know if you need any clarification or have additional questions.\n</final_response>",
+        ),
+        {},
+    )
+    assert "postProcessingParsedResponse" in response
+    assert response["postProcessingParsedResponse"]["responseText"]
+    assert "Based on your request" in response["postProcessingParsedResponse"]["responseText"]
+
+
 def test_invoke_from_orchestration_knowledge_base():
     """
     Normaly :: Invoke from Orchestration (Knowledge base)
@@ -419,6 +446,10 @@ def test_invoke_from_multi_expects():
     def get_post(event, response):
         return response
 
+    @app.parser_lambda_post_processing(spec)
+    def post_process(event, response):
+        return response
+
     response = app(
         parser_lambda_input(
             "ORCHESTRATION",
@@ -434,6 +465,7 @@ def test_invoke_from_multi_expects():
     assert response["orchestrationParsedResponse"]["responseDetails"]["actionGroupInvocation"]["apiName"] == "/hello"
     assert PromptType.ORCHESTRATION in spec._enabled_prompt_type_list
     assert PromptType.PRE_PROCESSING in spec._enabled_prompt_type_list
+    assert PromptType.POST_PROCESSING in spec._enabled_prompt_type_list
 
 
 def test_invoke_from_orchestration_direct_response():
